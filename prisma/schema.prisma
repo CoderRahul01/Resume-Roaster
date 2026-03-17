@@ -1,0 +1,29 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  roasts    Roast[]
+}
+
+model Roast {
+  id           String   @id @default(cuid())
+  resumeText   String
+  overallScore Float
+  feedback     Json     // Stores an array of RoastPoints
+  author       User?    @relation(fields: [authorId], references: [id])
+  authorId     String?
+  createdAt    DateTime @default(now())
+  isPublic     Boolean  @default(false)
+}
