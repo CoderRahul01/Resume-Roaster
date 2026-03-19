@@ -10,8 +10,9 @@ function getRedis(): Redis | null {
       lazyConnect: true,
       enableOfflineQueue: false,
     });
-    redis.on("error", () => {
-      // Suppress unhandled error events — errors handled per-call
+    redis.on("error", (err: Error) => {
+      // Suppress unhandled error events — errors are handled per-call via try/catch.
+      console.warn("[ratelimit] Redis connection error:", err.message);
     });
   }
   return redis;

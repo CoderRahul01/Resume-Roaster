@@ -1,19 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRazorpayClient } from "@/lib/razorpay";
+import { checkRateLimit, rateLimitHeaders } from "@/lib/ratelimit";
+import { RATE_LIMITS, SERVICES } from "@/lib/config";
 import { randomUUID } from "crypto";
 
 export async function POST(req: NextRequest) {
   try {
-    const razorpay = getRazorpayClient();
+    const rawIp = req.headers.get("x-forwarded-for") ?? "127.0.0.1";
+    const ip = rawIp.split(",")[0].trim();
 
-    // ₹499 in paise
-    const amount = 499 * 100;
-    const currency = "INR";
+    const rl = await checkRateLimit(ip, "createOrder", RATE_LIMITS.createOrder.limit, RATE_LIMITS.createOrder.windowSecs);
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: "Too many payment attempts. Please slow down and try again later." },
+        { status: 429, headers: rateLimitHeaders(rl) }
+      );
+    }
+
+    const razorpay = getRazorpayClient();
     const receipt = `rcpt_${randomUUID().substring(0, 8)}`;
 
     const order = await razorpay.orders.create({
-      amount,
-      currency,
+      amount: SERVICES.rewrite.pricePaise,
+      currency: "INR",
       receipt,
     });
 

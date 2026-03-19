@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAnthropicClient } from "@/lib/anthropic";
 import { checkRateLimit, rateLimitHeaders } from "@/lib/ratelimit";
+import { RATE_LIMITS, RESUME, SERVICES, AI_MODEL } from "@/lib/config";
 import { RoastResponse } from "@/types";
 
 export async function POST(req: NextRequest) {
   try {
-    const ip = req.headers.get("x-forwarded-for") ?? "127.0.0.1";
-    
-    // Rate limit: 5 roasts per IP per hour
-    const rl = await checkRateLimit(ip, "roast", 5, 3600);
+    const rawIp = req.headers.get("x-forwarded-for") ?? "127.0.0.1";
+    const ip = rawIp.split(",")[0].trim();
+
+    const rl = await checkRateLimit(ip, "roast", RATE_LIMITS.roast.limit, RATE_LIMITS.roast.windowSecs);
     if (!rl.success) {
       return NextResponse.json(
         { error: "Too many roasts. Slow down and try again in an hour." },
@@ -16,18 +17,28 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { resumeText } = await req.json();
+    const body = await req.json();
+    const resumeText: unknown = body?.resumeText;
 
-    if (!resumeText || resumeText.length < 100) {
+    if (typeof resumeText !== "string" || resumeText.trim().length < RESUME.minChars) {
       return NextResponse.json(
         { error: "Resume text is too short to roast." },
         { status: 400 }
       );
     }
+    if (resumeText.length > RESUME.maxChars) {
+      return NextResponse.json(
+        { error: "Resume text is too long. Please trim it below 50,000 characters." },
+        { status: 400 }
+      );
+    }
+
+    // Truncate before sending to AI to control token spend
+    const resumeForAI = resumeText.slice(0, RESUME.aiMaxChars);
 
     const anthropic = getAnthropicClient();
-    
-    const prompt = `You are a brutal, honest, and high-standard resume reviewer. You are part of the 'Resume Roaster' service. 
+
+    const prompt = `You are a brutal, honest, and high-standard resume reviewer. You are part of the 'Resume Roaster' service.
 Your goal is to provide a 'roast' of the user's resume.
 Be sharp, witty, and slightly mean, but provide actionable (though painful) truth.
 Your tone should be like a Senior Engineering Manager who has seen 10,000 generic resumes and is sick of them.
@@ -49,22 +60,31 @@ Return ONLY a JSON response in the following format:
 
 Here is the resume text:
 ---
-${resumeText}
+${resumeForAI}
 ---`;
 
     const message = await anthropic.messages.create({
-      model: "claude-sonnet-4-5",
-      max_tokens: 1500,
+      model: AI_MODEL,
+      max_tokens: SERVICES.roast.maxTokens,
       system: "You are the Resume Roaster AI. You only speak in JSON.",
       messages: [{ role: "user", content: prompt }],
     });
 
-    // Handle case where content might be an array or string
     const content = message.content[0].type === "text" ? message.content[0].text : "";
     // Strip markdown code fences if Claude wraps response in ```json ... ```
     const fenceMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
     const raw = (fenceMatch ? fenceMatch[1] : content).trim();
-    const roastData: RoastResponse = JSON.parse(raw);
+
+    let roastData: RoastResponse;
+    try {
+      roastData = JSON.parse(raw);
+    } catch {
+      console.error("Roast API: Claude returned invalid JSON:", raw);
+      return NextResponse.json(
+        { error: "The roaster returned an invalid response. Please try again." },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json(roastData, {
       headers: rateLimitHeaders(rl),

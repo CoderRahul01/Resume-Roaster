@@ -19,6 +19,10 @@ export const RESUME = {
 
 // All prices in paise (1 INR = 100 paise)
 export const SERVICES = {
+  roast: {
+    label:     "Resume Roast",
+    maxTokens: 1024,
+  },
   rewrite: {
     label:       "AI Resume Rewrite",
     description: "ATS-optimized, achievement-focused",

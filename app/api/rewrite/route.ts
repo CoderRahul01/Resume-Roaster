@@ -1,25 +1,46 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAnthropicClient } from "@/lib/anthropic";
+import { checkRateLimit, rateLimitHeaders } from "@/lib/ratelimit";
 import { createHmac } from "crypto";
+import { RATE_LIMITS, RESUME, SERVICES, AI_MODEL } from "@/lib/config";
 import { RewriteResponse } from "@/types";
 
 export async function POST(req: NextRequest) {
   try {
-    const { 
-      resumeText, 
-      razorpay_payment_id, 
-      razorpay_order_id, 
-      razorpay_signature 
-    } = await req.json();
+    const rawIp = req.headers.get("x-forwarded-for") ?? "127.0.0.1";
+    const ip = rawIp.split(",")[0].trim();
 
-    if (!resumeText || !razorpay_payment_id || !razorpay_order_id || !razorpay_signature) {
+    const rl = await checkRateLimit(ip, "rewrite", RATE_LIMITS.rewrite.limit, RATE_LIMITS.rewrite.windowSecs);
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: "Too many rewrite requests. Please try again in an hour." },
+        { status: 429, headers: rateLimitHeaders(rl) }
+      );
+    }
+
+    const body = await req.json();
+    const { razorpay_payment_id, razorpay_order_id, razorpay_signature } = body ?? {};
+    const resumeText: unknown = body?.resumeText;
+
+    if (
+      typeof resumeText !== "string" ||
+      !razorpay_payment_id ||
+      !razorpay_order_id ||
+      !razorpay_signature
+    ) {
       return NextResponse.json(
         { error: "Incomplete payment data." },
         { status: 400 }
       );
     }
+    if (resumeText.length > RESUME.maxChars) {
+      return NextResponse.json(
+        { error: "Resume text is too long." },
+        { status: 400 }
+      );
+    }
 
-    // Verify signature
+    // Verify Razorpay HMAC-SHA256 signature
     const secret = process.env.RAZORPAY_KEY_SECRET;
     if (!secret) throw new Error("RAZORPAY_KEY_SECRET is not set");
 
@@ -34,9 +55,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Truncate before sending to AI to control token spend
+    const resumeForAI = resumeText.slice(0, RESUME.aiMaxChars);
+
     const anthropic = getAnthropicClient();
-    
-    const prompt = `You are a professional resume writer and ATS optimization expert. 
+
+    const prompt = `You are a professional resume writer and ATS optimization expert.
 Your goal is to rewrite the provided resume to make it professional, high-impact, and ATS-friendly.
 
 Guidelines:
@@ -54,12 +78,12 @@ Return ONLY a JSON response in the following format:
 
 Here is the original resume text:
 ---
-${resumeText}
+${resumeForAI}
 ---`;
 
     const message = await anthropic.messages.create({
-      model: "claude-sonnet-4-5",
-      max_tokens: 3000,
+      model: AI_MODEL,
+      max_tokens: SERVICES.rewrite.maxTokens,
       system: "You are the Resume Roaster AI. You only speak in JSON.",
       messages: [{ role: "user", content: prompt }],
     });
@@ -68,7 +92,17 @@ ${resumeText}
     // Strip markdown code fences if Claude wraps response in ```json ... ```
     const fenceMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
     const raw = (fenceMatch ? fenceMatch[1] : content).trim();
-    const rewriteData: RewriteResponse = JSON.parse(raw);
+
+    let rewriteData: RewriteResponse;
+    try {
+      rewriteData = JSON.parse(raw);
+    } catch {
+      console.error("Rewrite API: Claude returned invalid JSON:", raw);
+      return NextResponse.json(
+        { error: "The rewriter returned an invalid response. Please try again." },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json(rewriteData);
   } catch (error) {
