@@ -1,93 +1,80 @@
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
-import crypto from "crypto";
 import { getAnthropicClient } from "@/lib/anthropic";
-import { checkRateLimit, rateLimitHeaders } from "@/lib/ratelimit";
-import { AI_MODEL, RATE_LIMITS, RESUME, SERVICES } from "@/lib/config";
+import { createHmac } from "crypto";
+import { RewriteResponse } from "@/types";
 
-export const maxDuration = 30;
-export const dynamic = "force-dynamic";
-
-const schema = z.object({
-  razorpay_payment_id: z.string().min(1, "Missing payment ID"),
-  razorpay_order_id: z.string().startsWith("order_", "Invalid order ID"),
-  razorpay_signature: z.string().length(64, "Invalid payment signature"),
-  resumeText: z
-    .string({ required_error: "Resume text is required" })
-    .min(RESUME.minChars, "Resume is too short.")
-    .max(RESUME.maxChars, "Resume is too long."),
-});
-
-function getIP(req: NextRequest): string {
-  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-}
+export const runtime = "edge";
 
 export async function POST(req: NextRequest) {
-  const rl = await checkRateLimit(getIP(req), "rewrite", RATE_LIMITS.rewrite.limit, RATE_LIMITS.rewrite.windowSecs);
-  if (!rl.success) {
+  try {
+    const { 
+      resumeText, 
+      razorpay_payment_id, 
+      razorpay_order_id, 
+      razorpay_signature 
+    } = await req.json();
+
+    if (!resumeText || !razorpay_payment_id || !razorpay_order_id || !razorpay_signature) {
+      return NextResponse.json(
+        { error: "Incomplete payment data." },
+        { status: 400 }
+      );
+    }
+
+    // Verify signature
+    const secret = process.env.RAZORPAY_KEY_SECRET;
+    if (!secret) throw new Error("RAZORPAY_KEY_SECRET is not set");
+
+    const generated_signature = createHmac("sha256", secret)
+      .update(razorpay_order_id + "|" + razorpay_payment_id)
+      .digest("hex");
+
+    if (generated_signature !== razorpay_signature) {
+      return NextResponse.json(
+        { error: "Payment verification failed. If this is an error, contact support." },
+        { status: 403 }
+      );
+    }
+
+    const anthropic = getAnthropicClient();
+    
+    const prompt = `You are a professional resume writer and ATS optimization expert. 
+Your goal is to rewrite the provided resume to make it professional, high-impact, and ATS-friendly.
+
+Guidelines:
+1. Preserve the original section structure (Summary, Experience, Skills, etc.).
+2. Use strong action verbs (e.g., "Spearheaded", "Engineered", "Optimized").
+3. Quantify achievements where possible (e.g., "Reduced latency by 40%", "Increased sales by ₹2M").
+4. Ensure keyword density for a modern IT/Tech job market.
+5. Keep the tone professional, confident, and concise.
+6. Return only the rewritten text, formatted clearly with Markdown-style headings if appropriate, but keeping it as a plain text block that can be copied.
+
+Return ONLY a JSON response in the following format:
+{
+  "rewrittenResume": "string"
+}
+
+Here is the original resume text:
+---
+${resumeText}
+---`;
+
+    const message = await anthropic.messages.create({
+      model: "claude-3-5-sonnet-20240620",
+      max_tokens: 3000,
+      system: "You are the Resume Roaster AI. You only speak in JSON.",
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    const content = message.content[0].type === "text" ? message.content[0].text : "";
+    const rewriteData: RewriteResponse = JSON.parse(content);
+
+    return NextResponse.json(rewriteData);
+  } catch (error) {
+    console.error("Rewrite API Error:", error);
     return NextResponse.json(
-      { error: "Too many requests. Please try again later." },
-      { status: 429, headers: rateLimitHeaders(rl) }
+      { error: "The rewriter had a meltdown. Please try again." },
+      { status: 500 }
     );
   }
-
-  const body = await req.json().catch(() => null);
-  const parsed = schema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json(
-      { error: parsed.error.issues[0].message },
-      { status: 400 }
-    );
-  }
-
-  const { razorpay_payment_id, razorpay_order_id, razorpay_signature, resumeText } = parsed.data;
-
-  // Verify Razorpay payment signature
-  const keySecret = process.env.RAZORPAY_KEY_SECRET;
-  if (!keySecret) throw new Error("RAZORPAY_KEY_SECRET is not set");
-
-  const expectedSignature = crypto
-    .createHmac("sha256", keySecret)
-    .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-    .digest("hex");
-
-  if (expectedSignature !== razorpay_signature) {
-    return NextResponse.json({ error: "Invalid payment signature" }, { status: 400 });
-  }
-
-  const message = await getAnthropicClient().messages.create({
-    model: AI_MODEL,
-    max_tokens: SERVICES.rewrite.maxTokens,
-    system:
-      "You are an expert resume writer who has helped candidates land jobs at Google, Apple, and top startups. You write resumes that are ATS-optimized, achievement-focused, and compelling.",
-    messages: [
-      {
-        role: "user",
-        content: `Completely rewrite this resume. Rules:
-- Use strong action verbs throughout
-- Quantify achievements where possible (add reasonable estimates if numbers are missing)
-- Remove filler words and weak language like "responsible for" or "helped with"
-- Optimize for ATS keyword scanning
-- Improve every section: Summary, Experience, Skills, Education
-- Keep the same work history but dramatically improve how it's presented
-
-Return ONLY the rewritten resume text. No explanations, no commentary.
-
-Original resume:
-<resume>
-${resumeText.slice(0, RESUME.aiMaxChars)}
-</resume>`,
-      },
-    ],
-  });
-
-  const content = message.content[0];
-  if (content.type !== "text") {
-    return NextResponse.json({ error: "Unexpected AI response" }, { status: 500 });
-  }
-
-  return NextResponse.json(
-    { rewrittenResume: content.text },
-    { headers: rateLimitHeaders(rl) }
-  );
 }

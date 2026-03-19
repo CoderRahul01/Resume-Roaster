@@ -1,0 +1,30 @@
+services:
+  app:
+    build:
+      context: .
+      target: runner
+      args:
+        NEXT_PUBLIC_BASE_URL: http://localhost:3000
+    ports:
+      - "3000:3000"
+    environment:
+      # Runtime secrets — copy from .env.local or set in your shell
+      ANTHROPIC_API_KEY:   ${ANTHROPIC_API_KEY}
+      RAZORPAY_KEY_ID:     ${RAZORPAY_KEY_ID}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET}
+      NEXT_PUBLIC_BASE_URL: http://localhost:3000
+      REDIS_URL:           redis://redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --save "" --appendonly no   # ephemeral — no persistence needed
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped

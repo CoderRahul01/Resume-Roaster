@@ -11,13 +11,44 @@ export default function SuccessPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
+  const [paymentData, setPaymentData] = useState<{
+    razorpay_payment_id: string;
+    razorpay_order_id: string;
+    razorpay_signature: string;
+  } | null>(null);
+  const [resumeText, setResumeText] = useState("");
+  const [sessionExpired, setSessionExpired] = useState(false);
+
+  async function fetchRewrite(
+    payment: { razorpay_payment_id: string; razorpay_order_id: string; razorpay_signature: string },
+    resume: string,
+  ) {
+    setIsLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/rewrite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...payment, resumeText: resume }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Failed to generate rewrite");
+      setRewrittenResume(data.rewrittenResume);
+      sessionStorage.removeItem("paymentData");
+      setPaymentData(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   useEffect(() => {
-    const paymentData = sessionStorage.getItem("paymentData");
-    const resumeText  = sessionStorage.getItem("resumeText");
+    const storedPayment = sessionStorage.getItem("paymentData");
+    const storedResume  = sessionStorage.getItem("resumeText");
 
-    if (!paymentData || !resumeText) {
-      setError("No payment found. Did you complete checkout?");
+    if (!storedPayment || !storedResume) {
+      setSessionExpired(true);
       setIsLoading(false);
       return;
     }
@@ -28,33 +59,24 @@ export default function SuccessPage() {
       razorpay_signature: string;
     };
     try {
-      payment = JSON.parse(paymentData);
+      payment = JSON.parse(storedPayment);
     } catch {
       setError("Invalid payment data. Please contact support.");
       setIsLoading(false);
       return;
     }
 
-    async function fetchRewrite() {
-      try {
-        const res = await fetch("/api/rewrite", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...payment, resumeText }),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error ?? "Failed to generate rewrite");
-        setRewrittenResume(data.rewrittenResume);
-        sessionStorage.removeItem("paymentData");
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Something went wrong");
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchRewrite();
+    setPaymentData(payment);
+    setResumeText(storedResume);
+    fetchRewrite(payment, storedResume);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  function handleRetry() {
+    if (paymentData && resumeText) {
+      fetchRewrite(paymentData, resumeText);
+    }
+  }
 
   function handleCopy() {
     navigator.clipboard.writeText(rewrittenResume);
@@ -90,8 +112,10 @@ export default function SuccessPage() {
       <div className="relative z-10 max-w-2xl mx-auto px-5 py-14 w-full space-y-8">
         {isLoading ? (
           <LoadingState />
+        ) : sessionExpired ? (
+          <SessionExpiredState />
         ) : error ? (
-          <ErrorState error={error} />
+          <ErrorState error={error} canRetry={!!paymentData} onRetry={handleRetry} />
         ) : (
           <ReadyState
             resume={rewrittenResume}
@@ -152,17 +176,48 @@ function LoadingState() {
   );
 }
 
-function ErrorState({ error }: { error: string }) {
+function SessionExpiredState() {
+  return (
+    <div className="text-center space-y-5 animate-fade-in">
+      <div className="text-5xl">🕐</div>
+      <h1 className="text-2xl font-bold">Session expired</h1>
+      <p className="text-zinc-400 text-sm max-w-sm mx-auto">
+        Looks like you&apos;ve already received your rewrite, or this session has expired.
+      </p>
+      <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+        <Link href="/">
+          <Button className="bg-orange-500 hover:bg-orange-600 font-semibold">
+            Go back to roast your resume →
+          </Button>
+        </Link>
+        <a href="mailto:support@resumeroaster.in">
+          <Button variant="outline" className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white">
+            Contact support
+          </Button>
+        </a>
+      </div>
+    </div>
+  );
+}
+
+function ErrorState({ error, canRetry, onRetry }: { error: string; canRetry: boolean; onRetry: () => void }) {
   return (
     <div className="text-center space-y-5 animate-fade-in">
       <div className="text-5xl">😕</div>
       <h1 className="text-2xl font-bold">Something went wrong</h1>
       <p className="text-zinc-400 text-sm max-w-sm mx-auto">{error}</p>
-      <Link href="/">
-        <Button className="bg-orange-500 hover:bg-orange-600 font-semibold mt-2">
-          Back to home
-        </Button>
-      </Link>
+      <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+        {canRetry && (
+          <Button onClick={onRetry} className="bg-orange-500 hover:bg-orange-600 font-semibold">
+            Retry
+          </Button>
+        )}
+        <Link href="/">
+          <Button variant="outline" className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white">
+            Back to home
+          </Button>
+        </Link>
+      </div>
     </div>
   );
 }
@@ -237,6 +292,17 @@ function ReadyState({
             Roast Another Resume →
           </Button>
         </Link>
+        <div className="pt-1">
+          <a
+            href={`https://twitter.com/intent/tweet?text=${encodeURIComponent("I just got my resume rewritten by AI for ₹499. It's actually good. Try it free → https://resumeroaster.in")}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Button variant="outline" className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white text-sm">
+              Share on X →
+            </Button>
+          </a>
+        </div>
       </div>
     </div>
   );

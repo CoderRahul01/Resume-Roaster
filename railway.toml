@@ -1,9 +1,9 @@
 [build]
-builder = "nixpacks"
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "pnpm start"
-healthcheckPath = "/api/health"
+healthcheckPath    = "/api/health"
 healthcheckTimeout = 10
-restartPolicyType = "on_failure"
+restartPolicyType  = "on_failure"
 restartPolicyMaxRetries = 3

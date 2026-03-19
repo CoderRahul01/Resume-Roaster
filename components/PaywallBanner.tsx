@@ -9,6 +9,7 @@ import { SERVICES, BRAND_COLOR } from "@/lib/config";
 
 interface PaywallBannerProps {
   resumeText: string;
+  score: number;
 }
 
 interface RazorpayResponse {
@@ -18,7 +19,8 @@ interface RazorpayResponse {
 }
 
 function loadRazorpayScript(): Promise<void> {
-  if ((window as Window & { Razorpay?: unknown }).Razorpay) return Promise.resolve();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if ((window as any).Razorpay) return Promise.resolve();
   return new Promise((resolve, reject) => {
     const script = document.createElement("script");
     script.src    = "https://checkout.razorpay.com/v1/checkout.js";
@@ -35,7 +37,7 @@ const BENEFITS = [
   "Professional summary rewritten",
 ];
 
-export function PaywallBanner({ resumeText }: PaywallBannerProps) {
+export function PaywallBanner({ resumeText, score }: PaywallBannerProps) {
   const [isLoading, setIsLoading] = useState(false);
   const router    = useRouter();
   const service   = SERVICES.rewrite;
@@ -53,7 +55,8 @@ export function PaywallBanner({ resumeText }: PaywallBannerProps) {
 
       await loadRazorpayScript();
 
-      const rzp = new (window as Window & { Razorpay: new (opts: unknown) => { open: () => void } }).Razorpay({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const rzp = new (window as any).Razorpay({
         key:       data.keyId,
         amount:    data.amount,
         currency:  data.currency,
@@ -80,8 +83,10 @@ export function PaywallBanner({ resumeText }: PaywallBannerProps) {
       {/* Header */}
       <div className="space-y-1">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-bold text-white">Fix it. Instantly.</h3>
-          <div className="text-right">
+          <h3 className="text-lg font-bold text-white">
+            Your resume scored {score}/10. Here&apos;s the fixed version.
+          </h3>
+          <div className="text-right shrink-0 ml-4">
             <div className="text-2xl font-black text-orange-500">{service.priceLabel}</div>
             <div className="text-[10px] text-zinc-500">one-time · no subscription</div>
           </div>
@@ -113,12 +118,18 @@ export function PaywallBanner({ resumeText }: PaywallBannerProps) {
           shadow-[0_4px_24px_rgba(249,115,22,0.25)]
         "
       >
-        {isLoading ? "Opening checkout..." : `Pay ${service.priceLabel} & Get Rewrite`}
+        {isLoading ? "Opening checkout..." : `Get My Fixed Resume — ${service.priceLabel}`}
       </Button>
 
-      <p className="text-center text-zinc-600 text-[10px]">
-        Secure payment via Razorpay · Your card never touches our servers
-      </p>
+      <ul className="flex flex-col items-center gap-1">
+        {[
+          "Instant delivery. No waiting.",
+          "Razorpay secured payment.",
+          "Your resume text is never stored on our servers.",
+        ].map((item) => (
+          <li key={item} className="text-center text-zinc-600 text-[10px]">{item}</li>
+        ))}
+      </ul>
     </div>
   );
 }

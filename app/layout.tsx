@@ -14,14 +14,21 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL ?? "https://resumeroaster.in"),
   title: "Resume Roaster — Brutal AI Resume Feedback",
   description:
     "Paste your resume. Get a brutally honest AI critique for free. Fix it with a professional AI rewrite for ₹499.",
+  icons: { icon: "/favicon.png" },
   openGraph: {
     title: "Resume Roaster — Your resume is probably terrible.",
     description:
       "Free AI resume critique. Professional AI rewrite for ₹499. No signup. Results in 10 seconds.",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Resume Roaster — Brutal AI Resume Feedback",
+    description: "Free AI roast. Professional rewrite for ₹499. No signup.",
   },
 };
 

@@ -103,7 +103,7 @@ export default function ResultsPage() {
               </span>
             </div>
             <RewriteBlur />
-            <PaywallBanner resumeText={resumeText} />
+            <PaywallBanner resumeText={resumeText} score={roastData!.overallScore} />
           </section>
         )}
 

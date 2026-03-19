@@ -24,6 +24,14 @@ Copy `.env.example` to `.env.local` and fill in:
 
 Missing `ANTHROPIC_API_KEY`, `RAZORPAY_KEY_ID`, or `RAZORPAY_KEY_SECRET` throws immediately on first request (fail-fast).
 
+## Adding a New Service (LinkedIn Optimizer, Cover Letter, etc.)
+
+1. Add the service config to `lib/config.ts` → `SERVICES` object (price, label, maxTokens)
+2. Create `app/api/create-order-<service>/route.ts` — copy `create-order/route.ts`, change `SERVICES.rewrite` to your new service key
+3. Create `app/api/<service>/route.ts` — verification + Claude call
+4. Add a new component `components/<Service>Banner.tsx` — copy `PaywallBanner.tsx`, update `service` reference
+5. Done. No other files need changing.
+
 ## Architecture
 
 **Resume Roaster** is a Next.js 16 App Router SaaS that critiques resumes for free and sells AI rewrites for ₹499.
