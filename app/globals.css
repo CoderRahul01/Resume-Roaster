@@ -48,7 +48,7 @@
 }
 
 :root {
-  --background: #080808;
+  --background: #050508;
   --foreground: oklch(0.985 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -83,7 +83,7 @@
 }
 
 .dark {
-  --background: #080808;
+  --background: #050508;
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.11 0 0);
   --card-foreground: oklch(0.985 0 0);
@@ -126,6 +126,26 @@
   html {
     @apply font-sans;
   }
+  ::selection {
+    background-color: rgba(99, 102, 241, 0.20);
+    color: #f8f8f8;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.14);
 }
 
 /* ── Animations ─────────────────────────────────────────────── */

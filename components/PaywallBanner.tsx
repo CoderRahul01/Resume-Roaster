@@ -79,32 +79,39 @@ export function PaywallBanner({ resumeText, score }: PaywallBannerProps) {
   }
 
   return (
-    <div className="rounded-2xl border border-orange-500/20 bg-gradient-to-b from-orange-500/[0.06] to-transparent p-6 space-y-5">
+    <div className="rounded-2xl border border-white/[0.10] bg-white/[0.02] p-6 space-y-5">
+      {/* Mono label */}
+      <div className="font-mono text-[10px] tracking-[0.2em] uppercase text-zinc-600">
+        The Fix
+      </div>
+
       {/* Header */}
-      <div className="space-y-1">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-bold text-white">
-            Your resume scored {score}/10. Here&apos;s the fixed version.
-          </h3>
-          <div className="text-right shrink-0 ml-4">
-            <div className="text-2xl font-black text-orange-500">{service.priceLabel}</div>
-            <div className="text-[10px] text-zinc-500">one-time · no subscription</div>
-          </div>
-        </div>
-        <p className="text-zinc-400 text-sm">
-          Claude AI rewrites your entire resume from scratch — keeping your info, fixing everything else.
+      <div className="space-y-1.5">
+        <h3 className="text-lg font-bold text-[#f8f8f8] leading-snug">
+          Resume Score: {score}/10. Here&apos;s the fixed version.
+        </h3>
+        <p className="text-zinc-500 text-sm">
+          Claude AI rewrites your entire resume — keeping your info, fixing everything else.
         </p>
       </div>
 
       {/* Benefits */}
-      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
         {BENEFITS.map((b) => (
-          <li key={b} className="flex items-center gap-2 text-xs text-zinc-300">
-            <CheckIcon className="w-3.5 h-3.5 text-orange-500 flex-shrink-0" />
+          <li key={b} className="flex items-center gap-2 text-xs text-zinc-400">
+            <CheckIcon className="w-3 h-3 text-zinc-600 flex-shrink-0" />
             {b}
           </li>
         ))}
       </ul>
+
+      {/* Price */}
+      <div className="flex items-baseline gap-2">
+        <span className="text-3xl font-black text-[#f8f8f8] tracking-tight">
+          {service.priceLabel}
+        </span>
+        <span className="text-xs text-zinc-600 font-mono">one-time</span>
+      </div>
 
       {/* CTA */}
       <Button
@@ -112,24 +119,25 @@ export function PaywallBanner({ resumeText, score }: PaywallBannerProps) {
         disabled={isLoading}
         size="lg"
         className="
-          w-full h-12 bg-orange-500 hover:bg-orange-600 text-white font-bold
-          text-[15px] tracking-wide rounded-xl transition-all duration-150
-          disabled:opacity-60 disabled:cursor-not-allowed
-          shadow-[0_4px_24px_rgba(249,115,22,0.25)]
+          w-full h-12 bg-white text-[#050508] font-bold
+          text-sm tracking-wide rounded-xl
+          hover:bg-zinc-100 active:scale-[0.99]
+          transition-all duration-150
+          disabled:opacity-40 disabled:cursor-not-allowed
+          shadow-none
         "
       >
-        {isLoading ? "Opening checkout..." : `Get My Fixed Resume — ${service.priceLabel}`}
+        {isLoading ? "Opening checkout..." : "Unlock My Rewritten Resume →"}
       </Button>
 
-      <ul className="flex flex-col items-center gap-1">
-        {[
-          "Instant delivery. No waiting.",
-          "Razorpay secured payment.",
-          "Your resume text is never stored on our servers.",
-        ].map((item) => (
-          <li key={item} className="text-center text-zinc-600 text-[10px]">{item}</li>
+      {/* Trust pills */}
+      <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+        {["Instant delivery", "Razorpay secured", "Text never stored"].map((item) => (
+          <span key={item} className="text-zinc-600 text-[10px] font-mono">
+            {item}
+          </span>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }

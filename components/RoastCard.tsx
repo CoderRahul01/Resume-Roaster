@@ -6,23 +6,31 @@ interface RoastCardProps {
 }
 
 export function RoastCard({ point, index }: RoastCardProps) {
+  const displayIndex = String(index + 1).padStart(2, "0");
+
   return (
     <div
       className="
-        group flex items-start gap-4 p-4
-        rounded-xl border border-zinc-800/60 bg-zinc-900/30
-        border-l-[3px] border-l-red-500/70
-        hover:border-zinc-700/60 hover:bg-zinc-900/50
-        transition-colors duration-200
+        group p-5 rounded-xl
+        border border-white/[0.07] bg-white/[0.02]
+        hover:bg-[#16161f] hover:border-white/[0.12]
+        transition-all duration-200
         animate-fade-in
       "
       style={{ animationDelay: `${index * 0.08}s`, animationFillMode: "both" }}
     >
-      <span className="text-xl flex-shrink-0 mt-0.5">{point.emoji}</span>
-      <div className="space-y-1 min-w-0">
-        <h3 className="font-semibold text-white text-sm leading-snug">{point.title}</h3>
-        <p className="text-zinc-400 text-sm leading-relaxed">{point.critique}</p>
+      <div className="flex items-center justify-between">
+        <span className="font-mono text-[11px] text-zinc-700 tracking-widest select-none">
+          {displayIndex}
+        </span>
+        <span className="text-xl leading-none">{point.emoji}</span>
       </div>
+      <h3 className="mt-3 font-semibold text-[#f8f8f8] text-sm leading-snug">
+        {point.title}
+      </h3>
+      <p className="mt-1.5 text-zinc-500 text-sm leading-relaxed">
+        {point.critique}
+      </p>
     </div>
   );
 }

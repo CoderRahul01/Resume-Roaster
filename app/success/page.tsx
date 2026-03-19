@@ -96,16 +96,16 @@ export default function SuccessPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#080808] text-white flex flex-col">
+    <main className="min-h-screen bg-[#050508] text-white flex flex-col">
       {/* Ambient glow */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-5%] left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-orange-500/[0.04] rounded-full blur-3xl" />
+        <div className="absolute top-[-10%] right-[-5%] w-[400px] h-[400px] bg-indigo-500/[0.02] rounded-full blur-[100px]" />
       </div>
 
       {/* Header */}
       <header className="relative z-10 border-b border-white/[0.06] px-6 py-4">
-        <Link href="/" className="font-black text-base tracking-tight">
-          Resume<span className="text-orange-500">Roaster</span>
+        <Link href="/" className="font-black text-base tracking-tight text-[#f8f8f8] hover:opacity-70 transition-opacity">
+          ResumeRoaster
         </Link>
       </header>
 
@@ -149,23 +149,27 @@ function LoadingState() {
   return (
     <div className="text-center space-y-8 animate-fade-in">
       <div className="space-y-3">
-        <div className="text-5xl animate-pulse">✨</div>
-        <h1 className="text-2xl font-bold">Rewriting your resume</h1>
-        <p className="text-zinc-500 text-sm">{steps[step]}</p>
+        <div className="flex justify-center">
+          <div className="w-10 h-10 border-2 border-white/[0.10] border-t-white/60 rounded-full animate-spin" />
+        </div>
+        <h1 className="text-2xl font-bold text-[#f8f8f8]">Rewriting your resume</h1>
+        <p className="text-zinc-500 text-sm font-mono">{steps[step]}</p>
       </div>
+
       {/* Progress bar */}
-      <div className="w-full h-[2px] bg-zinc-800 rounded-full overflow-hidden">
+      <div className="w-full h-[2px] bg-white/[0.07] rounded-full overflow-hidden">
         <div
-          className="h-full bg-orange-500 rounded-full transition-all duration-[2800ms] ease-out"
+          className="h-full bg-white rounded-full transition-all duration-[2800ms] ease-out"
           style={{ width: `${((step + 1) / steps.length) * 100}%` }}
         />
       </div>
+
       {/* Skeleton lines */}
       <div className="space-y-2.5 text-left">
         {Array.from({ length: 10 }).map((_, i) => (
           <div
             key={i}
-            className={`h-3 rounded-full bg-zinc-800/80 animate-pulse ${
+            className={`h-3 rounded-full bg-white/[0.07] animate-pulse ${
               i % 4 === 3 ? "w-1/2" : i % 4 === 2 ? "w-3/4" : "w-full"
             }`}
             style={{ animationDelay: `${i * 0.08}s` }}
@@ -180,18 +184,18 @@ function SessionExpiredState() {
   return (
     <div className="text-center space-y-5 animate-fade-in">
       <div className="text-5xl">🕐</div>
-      <h1 className="text-2xl font-bold">Session expired</h1>
-      <p className="text-zinc-400 text-sm max-w-sm mx-auto">
+      <h1 className="text-2xl font-bold text-[#f8f8f8]">Session expired</h1>
+      <p className="text-zinc-500 text-sm max-w-sm mx-auto">
         Looks like you&apos;ve already received your rewrite, or this session has expired.
       </p>
       <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
         <Link href="/">
-          <Button className="bg-orange-500 hover:bg-orange-600 font-semibold">
+          <Button className="bg-white text-[#050508] font-semibold hover:bg-zinc-100">
             Go back to roast your resume →
           </Button>
         </Link>
         <a href="mailto:support@resumeroaster.in">
-          <Button variant="outline" className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white">
+          <Button variant="outline" className="border-white/[0.10] text-zinc-400 hover:bg-white/[0.05] hover:text-[#f8f8f8]">
             Contact support
           </Button>
         </a>
@@ -204,16 +208,16 @@ function ErrorState({ error, canRetry, onRetry }: { error: string; canRetry: boo
   return (
     <div className="text-center space-y-5 animate-fade-in">
       <div className="text-5xl">😕</div>
-      <h1 className="text-2xl font-bold">Something went wrong</h1>
-      <p className="text-zinc-400 text-sm max-w-sm mx-auto">{error}</p>
+      <h1 className="text-2xl font-bold text-[#f8f8f8]">Something went wrong</h1>
+      <p className="text-zinc-500 text-sm max-w-sm mx-auto">{error}</p>
       <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
         {canRetry && (
-          <Button onClick={onRetry} className="bg-orange-500 hover:bg-orange-600 font-semibold">
+          <Button onClick={onRetry} className="bg-white text-[#050508] font-semibold hover:bg-zinc-100">
             Retry
           </Button>
         )}
         <Link href="/">
-          <Button variant="outline" className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white">
+          <Button variant="outline" className="border-white/[0.10] text-zinc-400 hover:bg-white/[0.05] hover:text-[#f8f8f8]">
             Back to home
           </Button>
         </Link>
@@ -237,11 +241,11 @@ function ReadyState({
     <div className="space-y-7 animate-fade-in">
       {/* Header */}
       <div className="text-center space-y-2">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-500/10 border border-green-500/20 mb-2">
-          <CheckIcon className="w-5 h-5 text-green-400" />
+        <div className="inline-flex items-center justify-center w-11 h-11 rounded-full border border-white/[0.12] bg-white/[0.04] mb-2">
+          <CheckIcon className="w-4 h-4 text-[#f8f8f8]" />
         </div>
-        <h1 className="text-2xl font-bold">Your rewritten resume is ready</h1>
-        <p className="text-zinc-500 text-sm">
+        <h1 className="text-2xl font-bold text-[#f8f8f8]">Your rewritten resume is ready</h1>
+        <p className="text-zinc-500 text-sm font-mono">
           ATS-optimized · Achievement-focused · Ready to send
         </p>
       </div>
@@ -250,7 +254,7 @@ function ReadyState({
       <div className="flex gap-3">
         <Button
           onClick={onCopy}
-          className="flex-1 bg-orange-500 hover:bg-orange-600 font-semibold h-11"
+          className="flex-1 bg-white text-[#050508] font-semibold h-11 hover:bg-zinc-100"
         >
           {copied ? (
             <span className="flex items-center gap-2">
@@ -265,7 +269,7 @@ function ReadyState({
         <Button
           onClick={onDownload}
           variant="outline"
-          className="flex-1 border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white h-11"
+          className="flex-1 border-white/[0.10] text-zinc-400 hover:bg-white/[0.05] hover:text-[#f8f8f8] h-11"
         >
           <span className="flex items-center gap-2">
             <DownloadIcon className="w-4 h-4" /> Download .txt
@@ -274,10 +278,12 @@ function ReadyState({
       </div>
 
       {/* Resume content */}
-      <div className="rounded-xl border border-zinc-800/70 bg-zinc-900/40 overflow-hidden">
-        <div className="px-4 py-3 border-b border-zinc-800/70 flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-orange-500/60" />
-          <span className="text-[11px] text-zinc-500 font-medium">Rewritten Resume</span>
+      <div className="rounded-xl border border-white/[0.07] bg-[#0e0e14] overflow-hidden">
+        <div className="px-4 py-3 border-b border-white/[0.06] flex items-center gap-2">
+          <div className="w-1.5 h-1.5 rounded-full bg-white/30" />
+          <span className="text-[11px] text-zinc-600 font-mono tracking-widest uppercase">
+            Rewritten Resume
+          </span>
         </div>
         <pre className="p-5 whitespace-pre-wrap text-sm text-zinc-300 font-mono leading-relaxed overflow-x-auto">
           {resume}
@@ -285,10 +291,10 @@ function ReadyState({
       </div>
 
       {/* Footer */}
-      <div className="text-center pt-2 border-t border-white/[0.06] space-y-3">
-        <p className="text-zinc-600 text-xs">Want to improve a different resume?</p>
+      <div className="text-center pt-2 border-t border-white/[0.05] space-y-3">
+        <p className="text-zinc-700 text-xs">Want to improve a different resume?</p>
         <Link href="/">
-          <Button variant="ghost" className="text-orange-500 hover:text-orange-400 text-sm">
+          <Button variant="ghost" className="text-zinc-400 hover:text-[#f8f8f8] text-sm">
             Roast Another Resume →
           </Button>
         </Link>
@@ -298,7 +304,10 @@ function ReadyState({
             target="_blank"
             rel="noopener noreferrer"
           >
-            <Button variant="outline" className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white text-sm">
+            <Button
+              variant="outline"
+              className="border-white/[0.10] text-zinc-500 hover:bg-white/[0.05] hover:text-[#f8f8f8] text-sm"
+            >
               Share on X →
             </Button>
           </a>

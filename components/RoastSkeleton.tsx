@@ -6,16 +6,15 @@ export function RoastSkeleton() {
       {Array.from({ length: 6 }).map((_, i) => (
         <div
           key={i}
-          className="border border-zinc-800 rounded-lg p-4 bg-zinc-900/60 border-l-4 border-l-zinc-700"
+          className="p-5 rounded-xl border border-white/[0.07] bg-white/[0.02]"
         >
-          <div className="flex items-start gap-3">
-            <Skeleton className="w-8 h-8 rounded bg-zinc-800 flex-shrink-0" />
-            <div className="flex-1 space-y-2">
-              <Skeleton className="h-4 w-40 bg-zinc-800" />
-              <Skeleton className="h-3 w-full bg-zinc-800" />
-              <Skeleton className="h-3 w-3/4 bg-zinc-800" />
-            </div>
+          <div className="flex items-center justify-between">
+            <Skeleton className="w-5 h-3 rounded bg-white/[0.06]" />
+            <Skeleton className="w-7 h-7 rounded-lg bg-white/[0.06]" />
           </div>
+          <Skeleton className="mt-3 h-4 w-32 rounded bg-white/[0.06]" />
+          <Skeleton className="mt-1.5 h-3 w-full rounded bg-white/[0.06]" />
+          <Skeleton className="mt-1 h-3 w-3/4 rounded bg-white/[0.06]" />
         </div>
       ))}
     </div>

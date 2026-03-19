@@ -48,4 +48,4 @@ export const SERVICES = {
 } as const;
 
 export const APP_NAME = "Resume Roaster";
-export const BRAND_COLOR = "#f97316"; // orange-500
+export const BRAND_COLOR = "#6366f1"; // indigo-500

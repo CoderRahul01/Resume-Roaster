@@ -20,9 +20,9 @@ const SAMPLE_LINES = [
 
 export function RewriteBlur() {
   return (
-    <div className="relative rounded-xl overflow-hidden border border-zinc-800/60">
+    <div className="relative rounded-xl overflow-hidden border border-white/[0.07]">
       {/* Blurred content */}
-      <div className="p-5 font-mono text-xs text-zinc-300 leading-relaxed select-none blur-[5px] pointer-events-none bg-zinc-900/30">
+      <div className="p-5 font-mono text-xs text-zinc-300 leading-relaxed select-none blur-[5px] pointer-events-none bg-[#0e0e14]">
         {SAMPLE_LINES.map((line, i) => (
           <div key={i} className={line === "" ? "h-3" : "truncate"}>
             {line}
@@ -31,15 +31,29 @@ export function RewriteBlur() {
       </div>
 
       {/* Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/30 via-zinc-950/50 to-zinc-950/80 flex flex-col items-center justify-center gap-2.5 px-6">
-        <div className="w-9 h-9 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center">
-          <span className="text-base">🔒</span>
+      <div className="absolute inset-0 bg-gradient-to-b from-[#050508]/20 via-[#050508]/60 to-[#050508]/92 flex flex-col items-center justify-center gap-2 px-6">
+        <div className="w-8 h-8 rounded-lg border border-white/[0.10] bg-white/[0.04] flex items-center justify-center">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-zinc-400"
+          >
+            <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
         </div>
-        <p className="text-white font-bold text-base text-center">
-          Your rewrite is ready to unlock
+        <p className="text-[#f8f8f8] font-medium text-sm text-center">
+          Your rewrite is locked
         </p>
-        <p className="text-zinc-400 text-xs text-center max-w-xs">
-          ATS-optimized · Stronger bullets · Professional summary
+        <p className="text-zinc-500 text-xs text-center max-w-xs">
+          Complete payment to unlock your rewritten resume
         </p>
       </div>
     </div>
