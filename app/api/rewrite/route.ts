@@ -65,13 +65,17 @@ ${resumeText}
     });
 
     const content = message.content[0].type === "text" ? message.content[0].text : "";
-    const rewriteData: RewriteResponse = JSON.parse(content);
+    // Strip markdown code fences if Claude wraps response in ```json ... ```
+    const fenceMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+    const raw = (fenceMatch ? fenceMatch[1] : content).trim();
+    const rewriteData: RewriteResponse = JSON.parse(raw);
 
     return NextResponse.json(rewriteData);
   } catch (error) {
     console.error("Rewrite API Error:", error);
+    const message = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { error: "The rewriter had a meltdown. Please try again." },
+      { error: `The rewriter had a meltdown: ${message}` },
       { status: 500 }
     );
   }
