@@ -53,7 +53,7 @@ ${resumeText}
 ---`;
 
     const message = await anthropic.messages.create({
-      model: "claude-3-5-sonnet-20240620",
+      model: "claude-sonnet-4-5",
       max_tokens: 1500,
       system: "You are the Resume Roaster AI. You only speak in JSON.",
       messages: [{ role: "user", content: prompt }],
@@ -68,8 +68,9 @@ ${resumeText}
     });
   } catch (error) {
     console.error("Roast API Error:", error);
+    const message = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { error: "The roaster had a meltdown. Please try again." },
+      { error: `The roaster had a meltdown: ${message}` },
       { status: 500 }
     );
   }
