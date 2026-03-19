@@ -3,8 +3,6 @@ import { getAnthropicClient } from "@/lib/anthropic";
 import { checkRateLimit, rateLimitHeaders } from "@/lib/ratelimit";
 import { RoastResponse } from "@/types";
 
-export const runtime = "edge";
-
 export async function POST(req: NextRequest) {
   try {
     const ip = req.headers.get("x-forwarded-for") ?? "127.0.0.1";

@@ -3,8 +3,6 @@ import { getAnthropicClient } from "@/lib/anthropic";
 import { createHmac } from "crypto";
 import { RewriteResponse } from "@/types";
 
-export const runtime = "edge";
-
 export async function POST(req: NextRequest) {
   try {
     const { 
