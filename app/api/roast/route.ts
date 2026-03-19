@@ -61,7 +61,10 @@ ${resumeText}
 
     // Handle case where content might be an array or string
     const content = message.content[0].type === "text" ? message.content[0].text : "";
-    const roastData: RoastResponse = JSON.parse(content);
+    // Strip markdown code fences if Claude wraps response in ```json ... ```
+    const fenceMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+    const raw = (fenceMatch ? fenceMatch[1] : content).trim();
+    const roastData: RoastResponse = JSON.parse(raw);
 
     return NextResponse.json(roastData, {
       headers: rateLimitHeaders(rl),
