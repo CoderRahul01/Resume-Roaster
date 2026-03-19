@@ -6,9 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { RoastResponse } from "@/types";
-import { UploadCloud } from "lucide-react";
-
-const MAX_CHARS = 8000;
+import { RESUME } from "@/lib/config";
 
 export default function HomePage() {
   const router = useRouter();
@@ -16,12 +14,14 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
 
+  const charCount = resumeText.length;
+  const isReady = resumeText.trim().length >= RESUME.minChars;
+
   async function handleSubmit() {
-    if (resumeText.trim().length < 100) {
-      toast.error("Please paste a longer resume (at least 100 characters).");
+    if (!isReady) {
+      toast.error("Paste at least a few lines of your resume.");
       return;
     }
-
     setIsLoading(true);
     try {
       const res = await fetch("/api/roast", {
@@ -42,97 +42,115 @@ export default function HomePage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#070709] text-white relative overflow-hidden flex flex-col pt-12">
-      {/* Subtle Mesh Gradient Background */}
-      <div className="absolute inset-0 z-0 pointer-events-none opacity-40">
-        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-[#10103a] rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-[#0d0d26] rounded-full blur-[150px]" />
+    <main className="min-h-screen bg-[#080808] text-white flex flex-col">
+      {/* Ambient glow */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-orange-500/[0.04] rounded-full blur-3xl animate-glow-pulse" />
       </div>
 
-      <div className="relative z-10 flex-col items-center justify-center flex-1 flex w-full max-w-4xl mx-auto px-6 pt-10 pb-20">
-        
-        {/* Typography Hero */}
-        <div className="text-center space-y-4 mb-16 animate-fade-in">
-          <h1 className="text-6xl sm:text-7xl font-black tracking-widest leading-tight text-white/90 drop-shadow-lg">
-            RESUME ROASTER
-          </h1>
-          <p className="text-zinc-500 text-lg tracking-wide uppercase font-medium">
-            Get roasted by AI.
-          </p>
-        </div>
+      {/* Nav */}
+      <nav className="relative z-10 px-6 py-5 flex items-center justify-between border-b border-white/[0.06]">
+        <span className="font-black text-base tracking-tight">
+          Resume<span className="text-orange-500">Roaster</span>
+        </span>
+        <span className="text-[11px] text-zinc-500 bg-zinc-900 px-3 py-1.5 rounded-full border border-zinc-800/80">
+          Free · No signup
+        </span>
+      </nav>
 
-        {/* Massive Glowing Circular Dropzone */}
-        <div className="relative group perspective-1000 mb-12 flex justify-center w-full">
-          <div
-            className={`
-              absolute inset-0 rounded-full blur-3xl transition-all duration-700
-              ${
-                isFocused
-                  ? "bg-white/20 scale-110 opacity-100"
-                  : "bg-blue-500/10 scale-100 opacity-60"
-              }
-              ${isLoading ? "animate-pulse bg-white/30" : ""}
-            `}
-          />
-          
-          <div
-            className={`
-              relative z-20 flex flex-col items-center justify-center
-              w-[340px] h-[340px] rounded-full overflow-hidden
-              border border-white/10 bg-[#0c0c14]/80 backdrop-blur-3xl
-              transition-all duration-500
-              ${isFocused ? "shadow-[0_0_80px_rgba(255,255,255,0.1)] border-white/30 scale-[1.02]" : "shadow-lg"}
-            `}
-          >
-            <Textarea
-              value={resumeText}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-              onChange={(e) => setResumeText(e.target.value.slice(0, MAX_CHARS))}
-              placeholder=""
-              className="absolute inset-0 w-full h-full p-12 text-center resize-none bg-transparent border-none text-white/80 placeholder:text-transparent focus:ring-0 text-sm font-mono overflow-y-auto z-30"
-              disabled={isLoading}
-            />
-            
-            {!resumeText && !isFocused && (
-              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none text-zinc-500">
-                <UploadCloud className="w-12 h-12 mb-4 opacity-50 stroke-[1.5]" />
-                <span className="text-sm font-medium tracking-wide uppercase">Paste Resume Here</span>
-              </div>
-            )}
-            
-            {resumeText && (
-              <span className="absolute bottom-6 text-[10px] text-zinc-600 tracking-widest uppercase z-10 pointer-events-none">
-                {resumeText.length.toLocaleString()} / {MAX_CHARS.toLocaleString()}
-              </span>
-            )}
+      {/* Main content */}
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-5 py-14">
+        <div className="w-full max-w-2xl space-y-10">
+
+          {/* Hero */}
+          <div className="text-center space-y-5 animate-fade-in">
+            <div className="inline-flex items-center gap-2 text-[11px] font-medium text-orange-400/90 bg-orange-500/[0.08] border border-orange-500/20 px-3.5 py-1.5 rounded-full">
+              <span className="w-1.5 h-1.5 bg-orange-400 rounded-full animate-pulse" />
+              AI-powered · Brutally honest · Free
+            </div>
+            <h1 className="text-[2.75rem] sm:text-6xl font-black tracking-tight leading-[1.08]">
+              Your resume is<br />
+              <span className="text-orange-500">probably terrible.</span>
+            </h1>
+            <p className="text-zinc-400 text-base sm:text-lg max-w-md mx-auto leading-relaxed">
+              Get a brutal AI critique in seconds.
+              Fix it with a professional rewrite for{" "}
+              <span className="text-white font-semibold">₹499</span>.
+            </p>
           </div>
-        </div>
 
-        {/* Roast Action Button */}
-        <div className="h-20 w-full flex justify-center animate-fade-in transition-all duration-500 delay-100">
-          {(resumeText.trim().length >= 100 || isLoading) && (
-            <Button
-              onClick={handleSubmit}
-              disabled={isLoading}
-              size="lg"
+          {/* Input card */}
+          <div className="animate-slide-up space-y-3" style={{ animationDelay: "0.1s" }}>
+            <div
               className={`
-                rounded-full px-12 py-7 font-bold text-lg tracking-widest uppercase
-                bg-white text-black hover:bg-zinc-200 hover:scale-105 active:scale-95
-                transition-all duration-300 shadow-[0_0_30px_rgba(255,255,255,0.3)]
-                disabled:opacity-80 disabled:cursor-not-allowed
+                relative rounded-2xl border bg-zinc-900/40 transition-all duration-300
+                ${isFocused
+                  ? "border-zinc-600 shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_32px_rgba(0,0,0,0.4)]"
+                  : "border-zinc-800/70 shadow-[0_4px_24px_rgba(0,0,0,0.3)]"
+                }
               `}
             >
+              <Textarea
+                value={resumeText}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+                onChange={(e) => setResumeText(e.target.value.slice(0, RESUME.maxChars))}
+                placeholder="Paste your entire resume here — work experience, skills, education, the whole thing..."
+                disabled={isLoading}
+                className="
+                  min-h-[260px] w-full bg-transparent border-none resize-none
+                  text-zinc-200 placeholder:text-zinc-600
+                  p-5 text-sm leading-relaxed
+                  focus:ring-0 focus-visible:ring-0
+                "
+              />
+              {charCount > 0 && (
+                <div className="absolute bottom-3.5 right-4 text-[11px] text-zinc-600 select-none">
+                  {charCount.toLocaleString()} chars
+                </div>
+              )}
+            </div>
+
+            <Button
+              onClick={handleSubmit}
+              disabled={!isReady || isLoading}
+              className="
+                w-full h-13 bg-white text-black font-bold text-[15px] tracking-wide
+                rounded-xl hover:bg-zinc-100 active:scale-[0.99]
+                transition-all duration-150
+                disabled:opacity-25 disabled:cursor-not-allowed disabled:hover:bg-white
+                shadow-[0_4px_16px_rgba(255,255,255,0.1)]
+              "
+            >
               {isLoading ? (
-                <span className="flex items-center gap-3">
-                  <span className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" /> 
-                  Roasting...
+                <span className="flex items-center gap-2.5">
+                  <span className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                  Roasting your resume...
                 </span>
               ) : (
-                "ROAST ME"
+                "Roast My Resume →"
               )}
             </Button>
-          )}
+
+            <p className="text-center text-zinc-600 text-[11px] pt-0.5">
+              Free critique · No account needed · Takes ~10 seconds
+            </p>
+          </div>
+
+          {/* How it works */}
+          <div className="animate-fade-in grid grid-cols-3 gap-3 pt-2" style={{ animationDelay: "0.2s" }}>
+            {[
+              { step: "01", label: "Paste resume", sub: "Plain text, any format" },
+              { step: "02", label: "Get roasted",  sub: "6 brutal critiques + score" },
+              { step: "03", label: "Fix it",        sub: "AI rewrite for ₹499" },
+            ].map(({ step, label, sub }) => (
+              <div key={step} className="text-center space-y-1 p-3 rounded-xl border border-zinc-800/60 bg-zinc-900/20">
+                <div className="text-[10px] text-orange-500/70 font-mono font-bold tracking-widest">{step}</div>
+                <div className="text-white text-xs font-semibold">{label}</div>
+                <div className="text-zinc-600 text-[11px]">{sub}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </main>

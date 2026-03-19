@@ -8,15 +8,20 @@ interface RoastCardProps {
 export function RoastCard({ point, index }: RoastCardProps) {
   return (
     <div
-      className="border border-zinc-800 rounded-lg p-4 bg-zinc-900/60 border-l-4 border-l-red-500 animate-fade-in"
-      style={{ animationDelay: `${index * 0.1}s`, animationFillMode: "both" }}
+      className="
+        group flex items-start gap-4 p-4
+        rounded-xl border border-zinc-800/60 bg-zinc-900/30
+        border-l-[3px] border-l-red-500/70
+        hover:border-zinc-700/60 hover:bg-zinc-900/50
+        transition-colors duration-200
+        animate-fade-in
+      "
+      style={{ animationDelay: `${index * 0.08}s`, animationFillMode: "both" }}
     >
-      <div className="flex items-start gap-3">
-        <span className="text-2xl flex-shrink-0">{point.emoji}</span>
-        <div>
-          <h3 className="font-semibold text-white mb-1">{point.title}</h3>
-          <p className="text-zinc-400 text-sm leading-relaxed">{point.critique}</p>
-        </div>
+      <span className="text-xl flex-shrink-0 mt-0.5">{point.emoji}</span>
+      <div className="space-y-1 min-w-0">
+        <h3 className="font-semibold text-white text-sm leading-snug">{point.title}</h3>
+        <p className="text-zinc-400 text-sm leading-relaxed">{point.critique}</p>
       </div>
     </div>
   );

@@ -1,16 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getStripeClient } from "@/lib/stripe";
+import crypto from "crypto";
 import { getAnthropicClient } from "@/lib/anthropic";
 import { checkRateLimit, rateLimitHeaders } from "@/lib/ratelimit";
+import { AI_MODEL, RATE_LIMITS, RESUME, SERVICES } from "@/lib/config";
 
 export const maxDuration = 30;
 export const dynamic = "force-dynamic";
 
 const schema = z.object({
-  sessionId: z
-    .string({ required_error: "Session ID is required" })
-    .startsWith("cs_", "Invalid session ID format"),
+  razorpay_payment_id: z.string().min(1, "Missing payment ID"),
+  razorpay_order_id: z.string().startsWith("order_", "Invalid order ID"),
+  razorpay_signature: z.string().length(64, "Invalid payment signature"),
+  resumeText: z
+    .string({ required_error: "Resume text is required" })
+    .min(RESUME.minChars, "Resume is too short.")
+    .max(RESUME.maxChars, "Resume is too long."),
 });
 
 function getIP(req: NextRequest): string {
@@ -18,7 +23,7 @@ function getIP(req: NextRequest): string {
 }
 
 export async function POST(req: NextRequest) {
-  const rl = await checkRateLimit(getIP(req), "rewrite", 20, 3600);
+  const rl = await checkRateLimit(getIP(req), "rewrite", RATE_LIMITS.rewrite.limit, RATE_LIMITS.rewrite.windowSecs);
   if (!rl.success) {
     return NextResponse.json(
       { error: "Too many requests. Please try again later." },
@@ -35,32 +40,24 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { sessionId } = parsed.data;
+  const { razorpay_payment_id, razorpay_order_id, razorpay_signature, resumeText } = parsed.data;
 
-  // Verify Stripe payment
-  const session = await getStripeClient().checkout.sessions.retrieve(sessionId);
-  if (session.payment_status !== "paid") {
-    return NextResponse.json({ error: "Payment not completed" }, { status: 402 });
-  }
+  // Verify Razorpay payment signature
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+  if (!keySecret) throw new Error("RAZORPAY_KEY_SECRET is not set");
 
-  // Reconstruct resume from chunked metadata
-  const numChunks = parseInt(session.metadata?.resume_chunks ?? "0");
-  if (numChunks === 0 || numChunks > 48) {
-    return NextResponse.json(
-      { error: "Resume data not found in session" },
-      { status: 400 }
-    );
-  }
+  const expectedSignature = crypto
+    .createHmac("sha256", keySecret)
+    .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+    .digest("hex");
 
-  let base64Resume = "";
-  for (let i = 0; i < numChunks; i++) {
-    base64Resume += session.metadata?.[`resume_${i}`] ?? "";
+  if (expectedSignature !== razorpay_signature) {
+    return NextResponse.json({ error: "Invalid payment signature" }, { status: 400 });
   }
-  const resumeText = Buffer.from(base64Resume, "base64").toString("utf-8");
 
   const message = await getAnthropicClient().messages.create({
-    model: "claude-sonnet-4-5",
-    max_tokens: 4096,
+    model: AI_MODEL,
+    max_tokens: SERVICES.rewrite.maxTokens,
     system:
       "You are an expert resume writer who has helped candidates land jobs at Google, Apple, and top startups. You write resumes that are ATS-optimized, achievement-focused, and compelling.",
     messages: [
@@ -78,7 +75,7 @@ Return ONLY the rewritten resume text. No explanations, no commentary.
 
 Original resume:
 <resume>
-${resumeText}
+${resumeText.slice(0, RESUME.aiMaxChars)}
 </resume>`,
       },
     ],

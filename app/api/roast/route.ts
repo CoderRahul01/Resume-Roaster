@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getAnthropicClient } from "@/lib/anthropic";
 import { checkRateLimit, rateLimitHeaders } from "@/lib/ratelimit";
+import { AI_MODEL, RATE_LIMITS, RESUME } from "@/lib/config";
 
 export const maxDuration = 30;
 export const dynamic = "force-dynamic";
@@ -9,8 +10,8 @@ export const dynamic = "force-dynamic";
 const schema = z.object({
   resumeText: z
     .string({ required_error: "Resume text is required" })
-    .min(100, "Resume is too short. Paste at least a few sentences.")
-    .max(50000, "Resume is too long."),
+    .min(RESUME.minChars, "Resume is too short. Paste at least a few sentences.")
+    .max(RESUME.maxChars, "Resume is too long."),
 });
 
 function getIP(req: NextRequest): string {
@@ -18,7 +19,7 @@ function getIP(req: NextRequest): string {
 }
 
 export async function POST(req: NextRequest) {
-  const rl = await checkRateLimit(getIP(req), "roast", 5, 3600);
+  const rl = await checkRateLimit(getIP(req), "roast", RATE_LIMITS.roast.limit, RATE_LIMITS.roast.windowSecs);
   if (!rl.success) {
     return NextResponse.json(
       { error: "Too many requests. Please try again later." },
@@ -36,10 +37,10 @@ export async function POST(req: NextRequest) {
   }
 
   const { resumeText } = parsed.data;
-  const truncated = resumeText.slice(0, 8000);
+  const truncated = resumeText.slice(0, RESUME.aiMaxChars);
 
   const message = await getAnthropicClient().messages.create({
-    model: "claude-sonnet-4-5",
+    model: AI_MODEL,
     max_tokens: 1024,
     system:
       "You are a brutally honest senior hiring manager at a Fortune 500 company with 20 years of experience. You've seen thousands of bad resumes. Be direct, specific, and harsh but constructive. Never sugarcoat.",

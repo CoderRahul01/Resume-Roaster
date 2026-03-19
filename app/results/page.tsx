@@ -9,6 +9,32 @@ import { RewriteBlur } from "@/components/RewriteBlur";
 import { PaywallBanner } from "@/components/PaywallBanner";
 import { RoastResponse } from "@/types";
 
+function ScoreBadge({ score }: { score: number }) {
+  const color =
+    score <= 3 ? "text-red-500" :
+    score <= 5 ? "text-orange-400" :
+    score <= 7 ? "text-yellow-400" :
+                 "text-green-400";
+
+  const label =
+    score <= 2 ? "Disaster" :
+    score <= 4 ? "Pretty Bad" :
+    score <= 6 ? "Needs Work" :
+    score <= 8 ? "Not Terrible" :
+                 "Actually Decent";
+
+  return (
+    <div className="text-center animate-score-pop">
+      <div className={`text-8xl font-black leading-none ${color}`}>
+        {score}
+        <span className="text-3xl text-zinc-700 font-bold">/10</span>
+      </div>
+      <div className={`mt-2 text-lg font-bold ${color}`}>{label}</div>
+      <div className="mt-1 text-zinc-500 text-sm">Here&apos;s exactly what&apos;s wrong:</div>
+    </div>
+  );
+}
+
 export default function ResultsPage() {
   const router = useRouter();
   const [roastData, setRoastData] = useState<RoastResponse | null>(null);
@@ -16,72 +42,50 @@ export default function ResultsPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const storedRoast = sessionStorage.getItem("roastData");
+    const storedRoast  = sessionStorage.getItem("roastData");
     const storedResume = sessionStorage.getItem("resumeText");
-
-    if (!storedRoast || !storedResume) {
-      router.replace("/");
-      return;
-    }
-
+    if (!storedRoast || !storedResume) { router.replace("/"); return; }
     setRoastData(JSON.parse(storedRoast));
     setResumeText(storedResume);
     setIsLoading(false);
   }, [router]);
 
-  const scoreLabel = (score: number) => {
-    if (score <= 2) return "A Complete Disaster";
-    if (score <= 4) return "Pretty Bad";
-    if (score <= 6) return "Needs Work";
-    if (score <= 8) return "Not Terrible";
-    return "Actually Decent";
-  };
-
   return (
-    <main className="min-h-screen bg-[#0a0a0a] text-white">
+    <main className="min-h-screen bg-[#080808] text-white">
+      {/* Ambient glow */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-5%] left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-red-500/[0.03] rounded-full blur-3xl" />
+      </div>
+
       {/* Header */}
-      <header className="border-b border-zinc-800 px-6 py-4 flex items-center justify-between">
-        <Link href="/" className="text-orange-500 font-bold text-lg">
-          🔥 ResumeRoast
+      <header className="relative z-10 border-b border-white/[0.06] px-6 py-4 flex items-center justify-between">
+        <Link href="/" className="font-black text-base tracking-tight">
+          Resume<span className="text-orange-500">Roaster</span>
         </Link>
-        <Link
-          href="/"
-          className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
-        >
+        <Link href="/" className="text-[11px] text-zinc-500 hover:text-zinc-300 transition-colors">
           ← Roast another
         </Link>
       </header>
 
-      <div className="max-w-2xl mx-auto px-6 py-12 space-y-10">
-        {/* Score headline */}
+      <div className="relative z-10 max-w-2xl mx-auto px-5 py-14 space-y-12">
+
+        {/* Score */}
         {!isLoading && roastData && (
-          <div className="text-center space-y-2">
-            <div className="text-7xl font-black text-red-500">
-              {roastData.overallScore}
-              <span className="text-3xl text-zinc-600">/10</span>
-            </div>
-            <h1 className="text-2xl font-bold text-white">
-              Your Resume Is{" "}
-              <span className="text-red-400">{scoreLabel(roastData.overallScore)}</span>
-            </h1>
-            <p className="text-zinc-500 text-sm">
-              Here&apos;s exactly what&apos;s wrong with it:
-            </p>
-          </div>
+          <ScoreBadge score={roastData.overallScore} />
         )}
 
         {/* Roast cards */}
-        <section>
-          <h2 className="text-lg font-semibold text-zinc-300 mb-4 flex items-center gap-2">
-            🔥 The Roast{" "}
-            <span className="text-xs font-normal text-green-500 bg-green-500/10 px-2 py-0.5 rounded-full">
+        <section className="space-y-3">
+          <div className="flex items-center gap-2 mb-5">
+            <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-widest">The Roast</h2>
+            <span className="text-[10px] text-green-500 bg-green-500/10 border border-green-500/20 px-2 py-0.5 rounded-full font-medium">
               FREE
             </span>
-          </h2>
+          </div>
           {isLoading ? (
             <RoastSkeleton />
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {roastData?.roast.map((point, i) => (
                 <RoastCard key={i} point={point} index={i} />
               ))}
@@ -89,15 +93,15 @@ export default function ResultsPage() {
           )}
         </section>
 
-        {/* Rewrite section */}
+        {/* Rewrite paywall */}
         {!isLoading && (
           <section className="space-y-4">
-            <h2 className="text-lg font-semibold text-zinc-300 flex items-center gap-2">
-              ✨ The Rewrite{" "}
-              <span className="text-xs font-normal text-orange-500 bg-orange-500/10 px-2 py-0.5 rounded-full">
-                $4.99
+            <div className="flex items-center gap-2 mb-5">
+              <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-widest">The Fix</h2>
+              <span className="text-[10px] text-orange-400 bg-orange-500/10 border border-orange-500/20 px-2 py-0.5 rounded-full font-medium">
+                ₹499
               </span>
-            </h2>
+            </div>
             <RewriteBlur />
             <PaywallBanner resumeText={resumeText} />
           </section>
@@ -105,14 +109,15 @@ export default function ResultsPage() {
 
         {/* Share */}
         {!isLoading && roastData && (
-          <div className="text-center pt-4 border-t border-zinc-800">
+          <div className="text-center pt-4 border-t border-white/[0.06]">
             <a
-              href={`https://twitter.com/intent/tweet?text=My resume scored ${roastData.overallScore}/10 on Resume Roast 🔥 Try yours for free at ${typeof window !== "undefined" ? window.location.origin : ""}`}
+              href={`https://twitter.com/intent/tweet?text=My resume scored ${roastData.overallScore}/10 on Resume Roaster 🔥 Get yours roasted free at ${typeof window !== "undefined" ? window.location.origin : "resumeroaster.in"}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
             >
-              Share your score on X →
+              <span>Share your score on X</span>
+              <span>→</span>
             </a>
           </div>
         )}

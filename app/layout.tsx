@@ -14,13 +14,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Resume Roaster — Get Your Resume Brutally Critiqued by AI",
+  title: "Resume Roaster — Brutal AI Resume Feedback",
   description:
-    "Paste your resume, get a brutal AI roast free. Then unlock a professionally rewritten version for $4.99.",
+    "Paste your resume. Get a brutally honest AI critique for free. Fix it with a professional AI rewrite for ₹499.",
   openGraph: {
-    title: "Resume Roaster — Brutal AI Resume Feedback",
+    title: "Resume Roaster — Your resume is probably terrible.",
     description:
-      "Paste your resume, get a brutal AI roast free. Then unlock a professionally rewritten version for $4.99.",
+      "Free AI resume critique. Professional AI rewrite for ₹499. No signup. Results in 10 seconds.",
     type: "website",
   },
 };
@@ -33,7 +33,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#0a0a0a] text-white`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#080808] text-white`}
       >
         {children}
         <Toaster position="bottom-right" richColors />
