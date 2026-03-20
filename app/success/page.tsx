@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { CheckIcon, ClipboardIcon, DownloadIcon } from "lucide-react";
+import { CheckIcon, ClipboardIcon, DownloadIcon, FileTextIcon } from "lucide-react";
+import { StructuredResume } from "@/types";
 
 export default function SuccessPage() {
   const [rewrittenResume, setRewrittenResume] = useState("");
+  const [structured, setStructured] = useState<StructuredResume | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
@@ -34,6 +36,7 @@ export default function SuccessPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to generate rewrite");
       setRewrittenResume(data.rewrittenResume);
+      if (data.structured) setStructured(data.structured);
       sessionStorage.removeItem("paymentData");
       setPaymentData(null);
     } catch (err) {
@@ -84,7 +87,23 @@ export default function SuccessPage() {
     setTimeout(() => setCopied(false), 2000);
   }
 
-  function handleDownload() {
+  async function handleDownloadPDF() {
+    if (!structured) {
+      // Fallback: download plain text if structured data missing
+      handleDownloadTxt();
+      return;
+    }
+    try {
+      const { generateAndDownloadResumePDF } = await import("@/lib/generateResumePDF");
+      await generateAndDownloadResumePDF(structured, "resume-rewritten.pdf");
+      toast.success("PDF downloaded!");
+    } catch {
+      toast.error("PDF generation failed. Downloading as text instead.");
+      handleDownloadTxt();
+    }
+  }
+
+  function handleDownloadTxt() {
     const blob = new Blob([rewrittenResume], { type: "text/plain" });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement("a");
@@ -118,15 +137,18 @@ export default function SuccessPage() {
         ) : (
           <ReadyState
             resume={rewrittenResume}
+            structured={structured}
             copied={copied}
             onCopy={handleCopy}
-            onDownload={handleDownload}
+            onDownloadPDF={handleDownloadPDF}
           />
         )}
       </div>
     </main>
   );
 }
+
+// ── Loading ────────────────────────────────────────────────────────────────────
 
 const LOADING_STEPS = [
   "Parsing your resume...",
@@ -152,7 +174,7 @@ function LoadingState() {
         <div className="flex justify-center">
           <div className="w-10 h-10 border-2 border-white/[0.10] border-t-[#ff4444]/80 rounded-full animate-spin" />
         </div>
-        <h1 className="text-2xl font-bold text-[#f8f8f8]">Claude is rewriting your resume</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-[#f8f8f8]">Claude is rewriting your resume</h1>
         <p className="text-zinc-500 text-sm font-mono">{LOADING_STEPS[step]}</p>
       </div>
 
@@ -180,18 +202,20 @@ function LoadingState() {
   );
 }
 
+// ── Session expired ────────────────────────────────────────────────────────────
+
 function SessionExpiredState() {
   return (
     <div className="text-center space-y-5 animate-fade-in">
       <div className="text-5xl">🕐</div>
-      <h1 className="text-2xl font-bold text-[#f8f8f8]">Session expired</h1>
+      <h1 className="text-xl sm:text-2xl font-bold text-[#f8f8f8]">Session expired</h1>
       <p className="text-zinc-500 text-sm max-w-sm mx-auto">
         Looks like you&apos;ve already received your rewrite, or this session has expired.
       </p>
       <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
         <Link href="/" className="w-full sm:w-auto">
           <Button className="w-full sm:w-auto bg-[#ff4444] text-white font-semibold hover:bg-[#ff2222]">
-            Go back to roast your resume →
+            Roast another resume →
           </Button>
         </Link>
         <a href="mailto:support@resumeroaster.in">
@@ -204,11 +228,13 @@ function SessionExpiredState() {
   );
 }
 
+// ── Error ──────────────────────────────────────────────────────────────────────
+
 function ErrorState({ error, canRetry, onRetry }: { error: string; canRetry: boolean; onRetry: () => void }) {
   return (
     <div className="text-center space-y-5 animate-fade-in">
       <div className="text-5xl">😕</div>
-      <h1 className="text-2xl font-bold text-[#f8f8f8]">Something went wrong</h1>
+      <h1 className="text-xl sm:text-2xl font-bold text-[#f8f8f8]">Something went wrong</h1>
       <p className="text-zinc-500 text-sm max-w-sm mx-auto">{error}</p>
       <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
         {canRetry && (
@@ -226,16 +252,20 @@ function ErrorState({ error, canRetry, onRetry }: { error: string; canRetry: boo
   );
 }
 
+// ── Ready ──────────────────────────────────────────────────────────────────────
+
 function ReadyState({
   resume,
+  structured,
   copied,
   onCopy,
-  onDownload,
+  onDownloadPDF,
 }: {
   resume: string;
+  structured: StructuredResume | null;
   copied: boolean;
   onCopy: () => void;
-  onDownload: () => void;
+  onDownloadPDF: () => void;
 }) {
   return (
     <div className="space-y-7 animate-fade-in">
@@ -244,51 +274,49 @@ function ReadyState({
         <div className="inline-flex items-center justify-center w-11 h-11 rounded-full border border-[#ff4444]/30 bg-[#ff4444]/10 mb-2">
           <CheckIcon className="w-4 h-4 text-[#ff4444]" />
         </div>
-        <h1 className="text-2xl font-bold text-[#f8f8f8]">Your rewritten resume is ready</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-[#f8f8f8]">Your rewritten resume is ready</h1>
         <p className="text-zinc-500 text-sm font-mono">
-          ATS-optimized · Achievement-focused · Ready to send
+          ATS-optimized · Achievement-focused · PDF ready to send
         </p>
       </div>
 
       {/* Action buttons */}
       <div className="flex flex-col sm:flex-row gap-3">
+        {/* Primary: Download PDF */}
+        <Button
+          onClick={onDownloadPDF}
+          className="flex-1 bg-[#ff4444] text-white font-bold h-12 hover:bg-[#ff2222] gap-2"
+        >
+          <DownloadIcon className="w-4 h-4" />
+          {structured ? "Download PDF" : "Download .txt"}
+        </Button>
+
+        {/* Secondary: Copy text */}
         <Button
           onClick={onCopy}
-          className="flex-1 bg-[#ff4444] text-white font-semibold h-12 hover:bg-[#ff2222]"
+          variant="outline"
+          className="flex-1 border-white/[0.10] text-zinc-400 hover:bg-white/[0.05] hover:text-[#f8f8f8] h-12 gap-2"
         >
           {copied ? (
-            <span className="flex items-center gap-2">
-              <CheckIcon className="w-4 h-4" /> Copied!
-            </span>
+            <>
+              <CheckIcon className="w-4 h-4 text-emerald-400" />
+              <span className="text-emerald-400">Copied!</span>
+            </>
           ) : (
-            <span className="flex items-center gap-2">
-              <ClipboardIcon className="w-4 h-4" /> Copy to Clipboard
-            </span>
+            <>
+              <ClipboardIcon className="w-4 h-4" />
+              Copy text
+            </>
           )}
-        </Button>
-        <Button
-          onClick={onDownload}
-          variant="outline"
-          className="flex-1 border-white/[0.10] text-zinc-400 hover:bg-white/[0.05] hover:text-[#f8f8f8] h-12"
-        >
-          <span className="flex items-center gap-2">
-            <DownloadIcon className="w-4 h-4" /> Download .txt
-          </span>
         </Button>
       </div>
 
-      {/* Resume content */}
-      <div className="rounded-xl border border-white/[0.07] bg-[#0e0e14] overflow-hidden">
-        <div className="px-4 py-3 border-b border-white/[0.06] flex items-center gap-2">
-          <div className="w-1.5 h-1.5 rounded-full bg-white/30" />
-          <span className="text-[11px] text-zinc-600 font-mono tracking-widest uppercase">
-            Rewritten Resume
-          </span>
-        </div>
-        <pre className="p-5 whitespace-pre-wrap text-sm text-zinc-300 font-mono leading-relaxed overflow-x-auto">
-          {resume}
-        </pre>
-      </div>
+      {/* If we have structured data, show a section preview */}
+      {structured ? (
+        <StructuredPreview data={structured} />
+      ) : (
+        <PlainTextPreview resume={resume} />
+      )}
 
       {/* Footer */}
       <div className="text-center pt-2 border-t border-white/[0.05] space-y-3">
@@ -313,6 +341,95 @@ function ReadyState({
           </a>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ── Structured resume preview ──────────────────────────────────────────────────
+
+function StructuredPreview({ data }: { data: StructuredResume }) {
+  return (
+    <div className="rounded-xl border border-white/[0.07] bg-[#0e0e14] overflow-hidden">
+      {/* Title bar */}
+      <div className="px-4 py-3 border-b border-white/[0.06] flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <div className="w-1.5 h-1.5 rounded-full bg-[#ff4444]/60" />
+          <span className="text-[11px] text-zinc-600 font-mono tracking-widest uppercase">
+            Rewritten Resume Preview
+          </span>
+        </div>
+        <span className="text-[10px] text-zinc-700 font-mono">PDF ↓</span>
+      </div>
+
+      <div className="p-5 space-y-5 max-h-[500px] overflow-y-auto">
+        {/* Header */}
+        <div className="text-center space-y-0.5">
+          <p className="font-bold text-[#f8f8f8] text-base">{data.name}</p>
+          <p className="text-zinc-500 text-xs">{data.contact}</p>
+        </div>
+
+        {/* Sections */}
+        {data.sections.map((section, i) => (
+          <div key={i} className="space-y-2">
+            {/* Section heading with divider */}
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-[9px] tracking-[0.18em] text-zinc-500 uppercase font-semibold">
+                {section.heading}
+              </span>
+              <div className="flex-1 border-t border-white/[0.07]" />
+            </div>
+
+            {/* Free text */}
+            {section.text && (
+              <p className="text-zinc-400 text-xs leading-relaxed">{section.text}</p>
+            )}
+
+            {/* Items */}
+            {section.items?.map((item, j) => (
+              <div key={j} className="space-y-1">
+                <div className="flex items-start justify-between gap-2">
+                  <span className="text-[#f8f8f8] text-xs font-semibold leading-snug">{item.title}</span>
+                  {item.period && (
+                    <span className="text-zinc-600 text-[10px] font-mono whitespace-nowrap flex-shrink-0">{item.period}</span>
+                  )}
+                </div>
+                {item.organization && (
+                  <p className="text-zinc-500 text-[11px] italic">{item.organization}{item.location ? ` · ${item.location}` : ""}</p>
+                )}
+                {item.bullets && item.bullets.length > 0 && (
+                  <ul className="space-y-0.5 mt-1">
+                    {item.bullets.map((b, k) => (
+                      <li key={k} className="text-zinc-400 text-xs leading-relaxed flex gap-1.5">
+                        <span className="text-[#ff4444]/70 flex-shrink-0 mt-0.5">•</span>
+                        <span>{b}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Plain text fallback preview ────────────────────────────────────────────────
+
+function PlainTextPreview({ resume }: { resume: string }) {
+  return (
+    <div className="rounded-xl border border-white/[0.07] bg-[#0e0e14] overflow-hidden">
+      <div className="px-4 py-3 border-b border-white/[0.06] flex items-center gap-2">
+        <div className="w-1.5 h-1.5 rounded-full bg-white/30" />
+        <span className="text-[11px] text-zinc-600 font-mono tracking-widest uppercase">
+          Rewritten Resume
+        </span>
+        <FileTextIcon className="w-3 h-3 text-zinc-700 ml-auto" />
+      </div>
+      <pre className="p-5 whitespace-pre-wrap text-sm text-zinc-300 font-mono leading-relaxed overflow-x-auto max-h-[500px]">
+        {resume}
+      </pre>
     </div>
   );
 }

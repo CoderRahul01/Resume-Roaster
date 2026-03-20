@@ -28,7 +28,7 @@ export const SERVICES = {
     description: "ATS-optimized, achievement-focused",
     pricePaise:  49_900,   // ₹499
     priceLabel:  "₹499",
-    maxTokens:   4096,
+    maxTokens:   5000,
   },
   // Uncomment when ready to launch:
   // linkedinOptimizer: {
