@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { CheckIcon } from "lucide-react";
-import { SERVICES, BRAND_COLOR } from "@/lib/config";
+import { SERVICES, BRAND_COLOR, FREE_MODE } from "@/lib/config";
 
 interface PaywallBannerProps {
   resumeText: string;
@@ -43,6 +43,20 @@ export function PaywallBanner({ resumeText, score }: PaywallBannerProps) {
   const service   = SERVICES.rewrite;
 
   async function handleUnlock() {
+    // FREE_MODE: skip Razorpay entirely — go straight to rewrite
+    if (FREE_MODE) {
+      sessionStorage.setItem(
+        "paymentData",
+        JSON.stringify({
+          razorpay_payment_id: "free_mode",
+          razorpay_order_id:   "free_mode",
+          razorpay_signature:  "free_mode",
+        }),
+      );
+      router.push("/success");
+      return;
+    }
+
     setIsLoading(true);
     try {
       const res = await fetch("/api/create-order", {
@@ -103,10 +117,17 @@ export function PaywallBanner({ resumeText, score }: PaywallBannerProps) {
 
       {/* Price */}
       <div className="flex items-baseline gap-2">
-        <span className="text-3xl font-black text-[#f8f8f8] tracking-tight">
-          {service.priceLabel}
-        </span>
-        <span className="text-xs text-zinc-600 font-mono">one-time · no subscription</span>
+        {FREE_MODE ? (
+          <>
+            <span className="text-3xl font-black text-[#ff4444] tracking-tight">FREE</span>
+            <span className="text-xs text-zinc-600 font-mono">limited time · no payment needed</span>
+          </>
+        ) : (
+          <>
+            <span className="text-3xl font-black text-[#f8f8f8] tracking-tight">{service.priceLabel}</span>
+            <span className="text-xs text-zinc-600 font-mono">one-time · no subscription</span>
+          </>
+        )}
       </div>
 
       {/* CTA */}
@@ -123,7 +144,12 @@ export function PaywallBanner({ resumeText, score }: PaywallBannerProps) {
           shadow-none
         "
       >
-        {isLoading ? "Opening checkout..." : "Fix My Resume for ₹499 →"}
+        {FREE_MODE
+          ? "Get My Free Rewrite →"
+          : isLoading
+          ? "Opening checkout..."
+          : "Fix My Resume for ₹499 →"
+        }
       </Button>
 
       {/* Trust pills */}

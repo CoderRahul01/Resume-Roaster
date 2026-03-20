@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAnthropicClient } from "@/lib/anthropic";
 import { checkRateLimit, rateLimitHeaders } from "@/lib/ratelimit";
 import { createHmac } from "crypto";
-import { RATE_LIMITS, RESUME, SERVICES, AI_MODEL } from "@/lib/config";
+import { RATE_LIMITS, RESUME, SERVICES, AI_MODEL, FREE_MODE } from "@/lib/config";
 import { StructuredResume } from "@/types";
 
 export async function POST(req: NextRequest) {
@@ -22,37 +22,32 @@ export async function POST(req: NextRequest) {
     const { razorpay_payment_id, razorpay_order_id, razorpay_signature } = body ?? {};
     const resumeText: unknown = body?.resumeText;
 
-    if (
-      typeof resumeText !== "string" ||
-      !razorpay_payment_id ||
-      !razorpay_order_id ||
-      !razorpay_signature
-    ) {
-      return NextResponse.json(
-        { error: "Incomplete payment data." },
-        { status: 400 }
-      );
+    if (typeof resumeText !== "string") {
+      return NextResponse.json({ error: "Resume text is required." }, { status: 400 });
     }
     if (resumeText.length > RESUME.maxChars) {
-      return NextResponse.json(
-        { error: "Resume text is too long." },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Resume text is too long." }, { status: 400 });
     }
 
-    // Verify Razorpay HMAC-SHA256 signature
-    const secret = process.env.RAZORPAY_KEY_SECRET;
-    if (!secret) throw new Error("RAZORPAY_KEY_SECRET is not set");
+    if (!FREE_MODE) {
+      // Require payment fields and verify Razorpay HMAC-SHA256 signature
+      if (!razorpay_payment_id || !razorpay_order_id || !razorpay_signature) {
+        return NextResponse.json({ error: "Incomplete payment data." }, { status: 400 });
+      }
 
-    const generated_signature = createHmac("sha256", secret)
-      .update(razorpay_order_id + "|" + razorpay_payment_id)
-      .digest("hex");
+      const secret = process.env.RAZORPAY_KEY_SECRET;
+      if (!secret) throw new Error("RAZORPAY_KEY_SECRET is not set");
 
-    if (generated_signature !== razorpay_signature) {
-      return NextResponse.json(
-        { error: "Payment verification failed. If this is an error, contact support." },
-        { status: 403 }
-      );
+      const generated_signature = createHmac("sha256", secret)
+        .update(razorpay_order_id + "|" + razorpay_payment_id)
+        .digest("hex");
+
+      if (generated_signature !== razorpay_signature) {
+        return NextResponse.json(
+          { error: "Payment verification failed. If this is an error, contact support." },
+          { status: 403 },
+        );
+      }
     }
 
     // Truncate before sending to AI to control token spend

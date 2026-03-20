@@ -49,3 +49,9 @@ export const SERVICES = {
 
 export const APP_NAME = "Resume Roaster";
 export const BRAND_COLOR = "#ff4444"; // neon red — matches the roast energy
+
+/**
+ * FREE_MODE — set true to bypass Razorpay payment for testing.
+ * Set back to false when live payments are working.
+ */
+export const FREE_MODE = true;
