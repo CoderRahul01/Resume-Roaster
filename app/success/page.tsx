@@ -95,20 +95,20 @@ export default function SuccessPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#050508] text-white flex flex-col">
+    <main className="min-h-[100dvh] bg-[#050508] text-white flex flex-col">
       {/* Ambient glow */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-10%] right-[-5%] w-[400px] h-[400px] bg-indigo-500/[0.02] rounded-full blur-[100px]" />
+        <div className="absolute top-[-10%] right-[-5%] w-[300px] sm:w-[400px] h-[300px] sm:h-[400px] bg-red-500/[0.03] rounded-full blur-[100px]" />
       </div>
 
       {/* Header */}
-      <header className="relative z-10 border-b border-white/[0.06] px-6 py-4">
+      <header className="relative z-10 border-b border-white/[0.06] px-4 sm:px-6 py-4">
         <Link href="/" className="font-black text-base tracking-tight text-[#f8f8f8] hover:opacity-70 transition-opacity">
           ResumeRoaster
         </Link>
       </header>
 
-      <div className="relative z-10 max-w-2xl mx-auto px-5 py-14 w-full space-y-8">
+      <div className="relative z-10 max-w-2xl mx-auto px-4 sm:px-5 py-10 sm:py-14 w-full space-y-8">
         {isLoading ? (
           <LoadingState />
         ) : sessionExpired ? (
@@ -189,8 +189,8 @@ function SessionExpiredState() {
         Looks like you&apos;ve already received your rewrite, or this session has expired.
       </p>
       <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
-        <Link href="/">
-          <Button className="bg-white text-[#050508] font-semibold hover:bg-zinc-100">
+        <Link href="/" className="w-full sm:w-auto">
+          <Button className="w-full sm:w-auto bg-[#ff4444] text-white font-semibold hover:bg-[#ff2222]">
             Go back to roast your resume →
           </Button>
         </Link>
@@ -212,7 +212,7 @@ function ErrorState({ error, canRetry, onRetry }: { error: string; canRetry: boo
       <p className="text-zinc-500 text-sm max-w-sm mx-auto">{error}</p>
       <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
         {canRetry && (
-          <Button onClick={onRetry} className="bg-white text-[#050508] font-semibold hover:bg-zinc-100">
+          <Button onClick={onRetry} className="bg-[#ff4444] text-white font-semibold hover:bg-[#ff2222]">
             Retry
           </Button>
         )}
@@ -251,10 +251,10 @@ function ReadyState({
       </div>
 
       {/* Action buttons */}
-      <div className="flex gap-3">
+      <div className="flex flex-col sm:flex-row gap-3">
         <Button
           onClick={onCopy}
-          className="flex-1 bg-white text-[#050508] font-semibold h-11 hover:bg-zinc-100"
+          className="flex-1 bg-[#ff4444] text-white font-semibold h-12 hover:bg-[#ff2222]"
         >
           {copied ? (
             <span className="flex items-center gap-2">
@@ -269,7 +269,7 @@ function ReadyState({
         <Button
           onClick={onDownload}
           variant="outline"
-          className="flex-1 border-white/[0.10] text-zinc-400 hover:bg-white/[0.05] hover:text-[#f8f8f8] h-11"
+          className="flex-1 border-white/[0.10] text-zinc-400 hover:bg-white/[0.05] hover:text-[#f8f8f8] h-12"
         >
           <span className="flex items-center gap-2">
             <DownloadIcon className="w-4 h-4" /> Download .txt

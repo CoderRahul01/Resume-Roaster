@@ -120,12 +120,17 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    -webkit-tap-highlight-color: transparent; /* Remove tap flash on mobile */
   }
   body {
     @apply bg-background text-foreground;
+    /* Smooth scrolling on iOS */
+    -webkit-overflow-scrolling: touch;
   }
   html {
     @apply font-sans;
+    /* Use dynamic viewport height so iOS Safari address bar doesn't clip content */
+    height: 100%;
   }
   ::selection {
     background-color: rgba(255, 68, 68, 0.20);
