@@ -3,7 +3,7 @@ import { getAnthropicClient } from "@/lib/anthropic";
 import { checkRateLimit, rateLimitHeaders } from "@/lib/ratelimit";
 import { createHmac } from "crypto";
 import { RATE_LIMITS, RESUME, SERVICES, AI_MODEL } from "@/lib/config";
-import { RewriteResponse } from "@/types";
+import { StructuredResume } from "@/types";
 
 export async function POST(req: NextRequest) {
   try {
@@ -61,22 +61,48 @@ export async function POST(req: NextRequest) {
     const anthropic = getAnthropicClient();
 
     const prompt = `You are a professional resume writer and ATS optimization expert.
-Your goal is to rewrite the provided resume to make it professional, high-impact, and ATS-friendly.
+Rewrite the resume below to be high-impact, ATS-friendly, and achievement-focused.
 
-Guidelines:
-1. Preserve the original section structure (Summary, Experience, Skills, etc.).
-2. Use strong action verbs (e.g., "Spearheaded", "Engineered", "Optimized").
-3. Quantify achievements where possible (e.g., "Reduced latency by 40%", "Increased sales by ₹2M").
-4. Ensure keyword density for a modern IT/Tech job market.
-5. Keep the tone professional, confident, and concise.
-6. Return only the rewritten text, formatted clearly with Markdown-style headings if appropriate, but keeping it as a plain text block that can be copied.
+Rules:
+1. Preserve every section that exists in the original (Summary, Experience, Education, Skills, Projects, etc.) — do NOT drop or merge sections.
+2. Use strong action verbs (Spearheaded, Architected, Optimized, Engineered, etc.).
+3. Quantify achievements wherever possible (e.g., "Reduced latency by 40%", "Grew revenue by ₹2M").
+4. Keep the candidate's original information — only improve the language and structure.
+5. Return ONLY a JSON object in the exact schema below. No extra text.
 
-Return ONLY a JSON response in the following format:
+JSON schema:
 {
-  "rewrittenResume": "string"
+  "name": "Full Name",
+  "contact": "email · phone · linkedin (keep original, one line)",
+  "sections": [
+    {
+      "heading": "SECTION HEADING IN CAPS",
+      "text": "Use this field for free-text sections like Summary, Objective, Certifications, Skills"
+    },
+    {
+      "heading": "WORK EXPERIENCE",
+      "items": [
+        {
+          "title": "Job Title",
+          "organization": "Company Name",
+          "period": "Month Year – Month Year",
+          "location": "City, Country (if present)",
+          "bullets": [
+            "Strong action-verb led bullet with metric...",
+            "Another achievement bullet..."
+          ]
+        }
+      ]
+    }
+  ]
 }
 
-Here is the original resume text:
+Notes:
+- Sections with a list of entries (Experience, Education, Projects) use "items".
+- Sections with free text (Summary, Skills, Certifications) use "text".
+- Keep all original sections from the resume; do not add new sections that weren't there.
+
+Original resume:
 ---
 ${resumeForAI}
 ---`;
@@ -84,7 +110,7 @@ ${resumeForAI}
     const message = await anthropic.messages.create({
       model: AI_MODEL,
       max_tokens: SERVICES.rewrite.maxTokens,
-      system: "You are the Resume Roaster AI. You only speak in JSON.",
+      system: "You are the Resume Roaster AI rewriter. You only speak in JSON.",
       messages: [{ role: "user", content: prompt }],
     });
 
@@ -93,9 +119,9 @@ ${resumeForAI}
     const fenceMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
     const raw = (fenceMatch ? fenceMatch[1] : content).trim();
 
-    let rewriteData: RewriteResponse;
+    let structured: StructuredResume;
     try {
-      rewriteData = JSON.parse(raw);
+      structured = JSON.parse(raw);
     } catch {
       console.error("Rewrite API: Claude returned invalid JSON:", raw);
       return NextResponse.json(
@@ -104,7 +130,28 @@ ${resumeForAI}
       );
     }
 
-    return NextResponse.json(rewriteData);
+    // Reconstruct plain text from structured for copy-to-clipboard
+    const plainLines: string[] = [structured.name, structured.contact, ""];
+    for (const section of structured.sections) {
+      plainLines.push(section.heading);
+      if (section.text) {
+        plainLines.push(section.text, "");
+      } else if (section.items) {
+        for (const item of section.items) {
+          const header = [item.title, item.organization, item.period, item.location]
+            .filter(Boolean)
+            .join(" | ");
+          plainLines.push(header);
+          for (const b of item.bullets ?? []) plainLines.push(`• ${b}`);
+          plainLines.push("");
+        }
+      }
+    }
+
+    return NextResponse.json(
+      { rewrittenResume: plainLines.join("\n"), structured },
+      { headers: rateLimitHeaders(rl) }
+    );
   } catch (error) {
     console.error("Rewrite API Error:", error);
     const message = error instanceof Error ? error.message : String(error);

@@ -15,7 +15,7 @@ export function RoastCard({ point, index }: RoastCardProps) {
         border border-white/[0.07] bg-white/[0.02]
         hover:bg-[#16161f] hover:border-white/[0.12]
         transition-all duration-200
-        animate-fade-in
+        animate-fade-in flex flex-col
       "
       style={{ animationDelay: `${index * 0.08}s`, animationFillMode: "both" }}
     >
@@ -28,9 +28,15 @@ export function RoastCard({ point, index }: RoastCardProps) {
       <h3 className="mt-3 font-semibold text-[#f8f8f8] text-sm leading-snug">
         {point.title}
       </h3>
-      <p className="mt-1.5 text-zinc-500 text-sm leading-relaxed">
+      <p className="mt-1.5 text-zinc-500 text-sm leading-relaxed flex-1">
         {point.critique}
       </p>
+      {point.fix && (
+        <p className="mt-3 pt-3 border-t border-white/[0.06] text-xs leading-relaxed">
+          <span className="text-[#ff4444] font-semibold">→ Fix: </span>
+          <span className="text-zinc-400">{point.fix}</span>
+        </p>
+      )}
     </div>
   );
 }

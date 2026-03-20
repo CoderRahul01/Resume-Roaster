@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, startTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { RoastCard } from "@/components/RoastCard";
@@ -45,9 +45,11 @@ export default function ResultsPage() {
     const storedRoast  = sessionStorage.getItem("roastData");
     const storedResume = sessionStorage.getItem("resumeText");
     if (!storedRoast || !storedResume) { router.replace("/"); return; }
-    setRoastData(JSON.parse(storedRoast));
-    setResumeText(storedResume);
-    setIsLoading(false);
+    startTransition(() => {
+      setRoastData(JSON.parse(storedRoast));
+      setResumeText(storedResume);
+      setIsLoading(false);
+    });
   }, [router]);
 
   return (
