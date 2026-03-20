@@ -69,8 +69,7 @@ export default function SuccessPage() {
     setPaymentData(payment);
     setResumeText(storedResume);
     fetchRewrite(payment, storedResume);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, []); // intentionally empty — runs once on mount
 
   function handleRetry() {
     if (paymentData && resumeText) {
@@ -129,19 +128,20 @@ export default function SuccessPage() {
   );
 }
 
+const LOADING_STEPS = [
+  "Parsing your resume...",
+  "Identifying weak points...",
+  "Rewriting experience bullets...",
+  "Optimizing for ATS...",
+  "Polishing the final draft...",
+];
+
 function LoadingState() {
-  const steps = [
-    "Parsing your resume...",
-    "Identifying weak points...",
-    "Rewriting experience bullets...",
-    "Optimizing for ATS...",
-    "Polishing the final draft...",
-  ];
   const [step, setStep] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setStep((s) => Math.min(s + 1, steps.length - 1));
+      setStep((s) => Math.min(s + 1, LOADING_STEPS.length - 1));
     }, 2800);
     return () => clearInterval(interval);
   }, []);
@@ -150,17 +150,17 @@ function LoadingState() {
     <div className="text-center space-y-8 animate-fade-in">
       <div className="space-y-3">
         <div className="flex justify-center">
-          <div className="w-10 h-10 border-2 border-white/[0.10] border-t-white/60 rounded-full animate-spin" />
+          <div className="w-10 h-10 border-2 border-white/[0.10] border-t-[#ff4444]/80 rounded-full animate-spin" />
         </div>
-        <h1 className="text-2xl font-bold text-[#f8f8f8]">Rewriting your resume</h1>
-        <p className="text-zinc-500 text-sm font-mono">{steps[step]}</p>
+        <h1 className="text-2xl font-bold text-[#f8f8f8]">Claude is rewriting your resume</h1>
+        <p className="text-zinc-500 text-sm font-mono">{LOADING_STEPS[step]}</p>
       </div>
 
       {/* Progress bar */}
       <div className="w-full h-[2px] bg-white/[0.07] rounded-full overflow-hidden">
         <div
-          className="h-full bg-white rounded-full transition-all duration-[2800ms] ease-out"
-          style={{ width: `${((step + 1) / steps.length) * 100}%` }}
+          className="h-full bg-[#ff4444] rounded-full transition-all duration-[2800ms] ease-out"
+          style={{ width: `${((step + 1) / LOADING_STEPS.length) * 100}%` }}
         />
       </div>
 
@@ -241,8 +241,8 @@ function ReadyState({
     <div className="space-y-7 animate-fade-in">
       {/* Header */}
       <div className="text-center space-y-2">
-        <div className="inline-flex items-center justify-center w-11 h-11 rounded-full border border-white/[0.12] bg-white/[0.04] mb-2">
-          <CheckIcon className="w-4 h-4 text-[#f8f8f8]" />
+        <div className="inline-flex items-center justify-center w-11 h-11 rounded-full border border-[#ff4444]/30 bg-[#ff4444]/10 mb-2">
+          <CheckIcon className="w-4 h-4 text-[#ff4444]" />
         </div>
         <h1 className="text-2xl font-bold text-[#f8f8f8]">Your rewritten resume is ready</h1>
         <p className="text-zinc-500 text-sm font-mono">

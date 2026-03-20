@@ -13,20 +13,28 @@ import { RoastResponse } from "@/types";
 
 function ScoreBadge({ score }: { score: number }) {
   const colorClass =
-    score <= 3 ? "text-red-500" :
-    score <= 5 ? "text-red-400" :
-    score <= 7 ? "text-zinc-300" :
-                 "text-green-500";
+    score <= 3 ? "text-[#ff4444]" :
+    score <= 5 ? "text-orange-400" :
+    score <= 7 ? "text-amber-400" :
+                 "text-emerald-400";
+
+  const barColor =
+    score <= 3 ? "bg-[#ff4444]" :
+    score <= 5 ? "bg-orange-400" :
+    score <= 7 ? "bg-amber-400" :
+                 "bg-emerald-400";
 
   const label =
-    score <= 2 ? "Disaster" :
-    score <= 4 ? "Pretty Bad" :
-    score <= 6 ? "Needs Work" :
-    score <= 8 ? "Not Terrible" :
-                 "Actually Decent";
+    score <= 2 ? "Actively hurting you" :
+    score <= 4 ? "Losing you interviews" :
+    score <= 6 ? "Forgettable" :
+    score <= 8 ? "Getting there" :
+                 "Actually solid";
+
+  const pct = `${(score / 10) * 100}%`;
 
   return (
-    <div className="animate-score-pop pb-6 border-b border-white/[0.06]">
+    <div className="animate-score-pop pb-6 border-b border-white/[0.06] space-y-5">
       <div className="flex items-end gap-5">
         <div className={`text-7xl font-black leading-none tracking-tighter ${colorClass}`}>
           {score}
@@ -38,6 +46,24 @@ function ScoreBadge({ score }: { score: number }) {
           </div>
           <div className={`text-sm font-semibold ${colorClass}`}>{label}</div>
         </div>
+      </div>
+
+      {/* Progress bar */}
+      <div className="space-y-1.5">
+        <div className="w-full h-[3px] bg-white/[0.07] rounded-full overflow-hidden">
+          <div
+            className={`h-full rounded-full animate-score-bar ${barColor}`}
+            style={{ "--score-width": pct } as React.CSSProperties}
+          />
+        </div>
+        <p className="text-zinc-600 text-[11px] font-mono">
+          {score <= 5
+            ? "Most recruiters reject resumes at this level."
+            : score <= 7
+            ? "You're in the maybe pile. Let's fix that."
+            : "You're in decent shape. Small wins left."
+          }
+        </p>
       </div>
     </div>
   );
@@ -97,8 +123,8 @@ export default function HomePage() {
     <main className="min-h-screen bg-[#050508] text-white flex flex-col">
       {/* Ambient glow */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-15%] right-[-10%] w-[500px] h-[500px] bg-indigo-500/[0.025] rounded-full blur-[120px]" />
-        <div className="absolute top-[-5%] left-1/2 -translate-x-1/2 w-[600px] h-[200px] bg-white/[0.012] rounded-full blur-[80px]" />
+        <div className="absolute top-[-15%] right-[-10%] w-[500px] h-[500px] bg-red-500/[0.04] rounded-full blur-[120px]" />
+        <div className="absolute top-[-5%] left-1/2 -translate-x-1/2 w-[600px] h-[200px] bg-red-500/[0.015] rounded-full blur-[80px]" />
       </div>
 
       {/* Nav */}
@@ -134,15 +160,15 @@ export default function HomePage() {
             <div className="text-center space-y-5 animate-fade-in">
               <div className="inline-flex">
                 <span className="border border-white/[0.10] text-zinc-500 font-mono text-[10px] tracking-[0.2em] uppercase px-3 py-1.5 rounded-full">
-                  AI Resume Critic
+                  Free Brutal Critique
                 </span>
               </div>
               <h1 className="text-[2.75rem] sm:text-6xl font-black tracking-tight leading-[1.05]">
                 Your resume is<br />
-                <span className="text-[#f8f8f8]">probably terrible.</span>
+                <span className="text-[#ff4444]">costing you interviews.</span>
               </h1>
               <p className="text-zinc-500 text-base sm:text-lg max-w-md mx-auto leading-relaxed">
-                Get a brutal AI critique in seconds.
+                Paste it below. Get 6 brutal critiques + a score in seconds.
                 Fix it with a professional rewrite for{" "}
                 <span className="text-[#f8f8f8] font-semibold">₹499</span>.
               </p>
@@ -156,7 +182,7 @@ export default function HomePage() {
                 className={`
                   relative rounded-2xl border bg-[#0e0e14] transition-all duration-300
                   ${isFocused
-                    ? "border-white/[0.20] shadow-[0_0_0_1px_rgba(99,102,241,0.30)]"
+                    ? "border-white/[0.20] shadow-[0_0_0_1px_rgba(255,68,68,0.20)]"
                     : "border-white/[0.08]"
                   }
                 `}
@@ -186,16 +212,16 @@ export default function HomePage() {
                 onClick={handleSubmit}
                 disabled={!isReady || isLoading}
                 className="
-                  w-full h-13 bg-white text-[#050508] font-bold text-[15px] tracking-wide
-                  rounded-xl hover:bg-zinc-100 active:scale-[0.99]
+                  w-full h-13 bg-[#ff4444] text-white font-bold text-[15px] tracking-wide
+                  rounded-xl hover:bg-[#ff2222] active:scale-[0.99]
                   transition-all duration-150
-                  disabled:opacity-20 disabled:cursor-not-allowed disabled:hover:bg-white
+                  disabled:opacity-20 disabled:cursor-not-allowed disabled:hover:bg-[#ff4444]
                   shadow-none
                 "
               >
                 {isLoading ? (
                   <span className="flex items-center gap-2.5">
-                    <span className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                    <span className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                     Roasting your resume...
                   </span>
                 ) : (
@@ -211,8 +237,8 @@ export default function HomePage() {
               {isLoading ? (
                 <div className="space-y-8">
                   <div className="h-32 flex flex-col items-center justify-center gap-3">
-                    <div className="w-8 h-8 border-2 border-white/[0.10] border-t-white/60 rounded-full animate-spin" />
-                    <p className="text-zinc-600 text-sm font-mono">Roasting your resume...</p>
+                    <div className="w-8 h-8 border-2 border-white/[0.10] border-t-[#ff4444]/60 rounded-full animate-spin" />
+                    <p className="text-zinc-600 text-sm font-mono">Reading your resume...</p>
                   </div>
                   <RoastSkeleton />
                 </div>
@@ -227,7 +253,7 @@ export default function HomePage() {
                       </span>
                       <div className="flex-1 border-t border-white/[0.05]" />
                     </div>
-                    <div className="grid grid-cols-1 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {roastData.roast.map((point, i) => (
                         <RoastCard key={i} point={point} index={i} />
                       ))}
