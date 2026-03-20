@@ -80,14 +80,18 @@ export function PaywallBanner({ resumeText, score }: PaywallBannerProps) {
 
   return (
     <div className="rounded-2xl border border-white/[0.10] bg-white/[0.02] p-6 space-y-5">
+      {/* Mono label */}
+      <div className="font-mono text-[10px] tracking-[0.2em] uppercase text-zinc-600">
+        The Fix
+      </div>
+
       {/* Header */}
       <div className="space-y-1.5">
         <h3 className="text-lg font-bold text-[#f8f8f8] leading-snug">
-          Your resume scored {score}/10. Here&apos;s the professional version.
+          Resume Score: {score}/10. Here&apos;s the fixed version.
         </h3>
         <p className="text-zinc-500 text-sm">
-          Every day you send the old version, you lose an interview.
-          Claude AI rewrites your entire resume — keeping your story, fixing everything else.
+          Claude AI rewrites your entire resume — keeping your info, fixing everything else.
         </p>
       </div>
 
@@ -95,7 +99,7 @@ export function PaywallBanner({ resumeText, score }: PaywallBannerProps) {
       <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
         {BENEFITS.map((b) => (
           <li key={b} className="flex items-center gap-2 text-xs text-zinc-400">
-            <CheckIcon className="w-3 h-3 text-[#ff4444] flex-shrink-0" />
+            <CheckIcon className="w-3 h-3 text-zinc-600 flex-shrink-0" />
             {b}
           </li>
         ))}
@@ -106,7 +110,7 @@ export function PaywallBanner({ resumeText, score }: PaywallBannerProps) {
         <span className="text-3xl font-black text-[#f8f8f8] tracking-tight">
           {service.priceLabel}
         </span>
-        <span className="text-xs text-zinc-600 font-mono">one-time · no subscription</span>
+        <span className="text-xs text-zinc-600 font-mono">one-time</span>
       </div>
 
       {/* CTA */}
@@ -115,23 +119,22 @@ export function PaywallBanner({ resumeText, score }: PaywallBannerProps) {
         disabled={isLoading}
         size="lg"
         className="
-          w-full h-12 bg-[#ff4444] text-white font-bold
+          w-full h-12 bg-white text-[#050508] font-bold
           text-sm tracking-wide rounded-xl
-          hover:bg-[#ff2222] active:scale-[0.99]
+          hover:bg-zinc-100 active:scale-[0.99]
           transition-all duration-150
           disabled:opacity-40 disabled:cursor-not-allowed
           shadow-none
         "
       >
-        {isLoading ? "Opening checkout..." : "Fix My Resume for ₹499 →"}
+        {isLoading ? "Opening checkout..." : "Unlock My Rewritten Resume →"}
       </Button>
 
       {/* Trust pills */}
-      <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
-        {["Instant delivery", "Razorpay secured", "Text never stored"].map((item, i, arr) => (
-          <span key={item} className="flex items-center gap-4">
-            <span className="text-zinc-500 text-[10px] font-mono">{item}</span>
-            {i < arr.length - 1 && <span className="text-zinc-700 text-[10px]">·</span>}
+      <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+        {["Instant delivery", "Razorpay secured", "Text never stored"].map((item) => (
+          <span key={item} className="text-zinc-600 text-[10px] font-mono">
+            {item}
           </span>
         ))}
       </div>

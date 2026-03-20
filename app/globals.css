@@ -97,7 +97,6 @@
   --muted-foreground: oklch(0.708 0 0);
   --accent: oklch(0.269 0 0);
   --accent-foreground: oklch(0.985 0 0);
-  --brand-red: #ff4444;
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 8%);
   --input: oklch(1 0 0 / 10%);
@@ -128,7 +127,7 @@
     @apply font-sans;
   }
   ::selection {
-    background-color: rgba(255, 68, 68, 0.20);
+    background-color: rgba(99, 102, 241, 0.20);
     color: #f8f8f8;
   }
 }
@@ -182,11 +181,6 @@
   100% { background-position: 200% center; }
 }
 
-@keyframes score-bar-fill {
-  from { width: 0%; }
-  to   { width: var(--score-width); }
-}
-
 .animate-fade-in {
   animation: fade-in 0.4s ease-out both;
 }
@@ -205,8 +199,4 @@
 
 .animate-score-pop {
   animation: score-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-}
-
-.animate-score-bar {
-  animation: score-bar-fill 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
 }

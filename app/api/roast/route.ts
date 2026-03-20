@@ -47,13 +47,12 @@ Provide exactly 6 critique points and an overall score out of 10.
 Each critique point must have:
 - An emoji
 - A short, punchy title
-- A 2-3 sentence explanation of the failure (the critique)
-- A one-line actionable fix (the "fix") — a specific, concrete change they can make right now
+- A 2-3 sentence explanation of the failure (the critique).
 
 Return ONLY a JSON response in the following format:
 {
   "roast": [
-    { "emoji": "string", "title": "string", "critique": "string", "fix": "string" },
+    { "emoji": "string", "title": "string", "critique": "string" },
     ...
   ],
   "overallScore": number
