@@ -21,14 +21,14 @@ export const RESUME = {
 export const SERVICES = {
   roast: {
     label:     "Resume Roast",
-    maxTokens: 1024,
+    maxTokens: 1400,
   },
   rewrite: {
     label:       "AI Resume Rewrite",
     description: "ATS-optimized, achievement-focused",
     pricePaise:  49_900,   // ₹499
     priceLabel:  "₹499",
-    maxTokens:   4096,
+    maxTokens:   5000,
   },
   // Uncomment when ready to launch:
   // linkedinOptimizer: {
@@ -48,4 +48,4 @@ export const SERVICES = {
 } as const;
 
 export const APP_NAME = "Resume Roaster";
-export const BRAND_COLOR = "#6366f1"; // indigo-500
+export const BRAND_COLOR = "#ff4444"; // neon red — matches the roast energy
