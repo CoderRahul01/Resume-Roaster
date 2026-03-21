@@ -22,8 +22,8 @@ export async function POST(req: NextRequest) {
       ? body.couponCode.trim().toUpperCase()
       : undefined;
 
-    const basePaise = SERVICES.rewrite.pricePaise;
-    let finalPaise = basePaise;
+    const basePaise: number = SERVICES.rewrite.pricePaise;
+    let finalPaise: number = basePaise;
     let discountPercent = 0;
 
     if (couponCode) {
