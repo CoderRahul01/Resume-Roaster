@@ -51,7 +51,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/public           ./public
 
 # Copy Prisma schema + generated client for runtime queries
 COPY --from=builder --chown=nextjs:nodejs /app/prisma           ./prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder --chown=nextjs:nodejs /app/generated        ./generated
 
 USER nextjs
 
