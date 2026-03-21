@@ -3,21 +3,43 @@
  * Add new services (LinkedIn optimizer, cover letter, etc.) by extending SERVICES.
  */
 
-export const AI_MODEL = "claude-sonnet-4-5";
+// ── AI Provider ───────────────────────────────────────────────────────────────
+// Change THIS ONE LINE to switch between free NVIDIA NIM and Anthropic Claude:
+export const AI_PROVIDER: "nvidia" | "claude" = "nvidia"; // ← "nvidia" | "claude"
 
+// NVIDIA NIM free-tier models (https://build.nvidia.com/models)
+export const NVIDIA_MODELS = {
+  roast:   "meta/llama-3.3-70b-instruct",
+  rewrite: "meta/llama-3.3-70b-instruct",
+} as const;
+
+// Anthropic Claude models (used when AI_PROVIDER = "claude")
+export const CLAUDE_MODELS = {
+  roast:   "claude-sonnet-4-5",
+  rewrite: "claude-sonnet-4-5",
+} as const;
+
+// Active models — resolved automatically from AI_PROVIDER
+export const ACTIVE_MODELS = AI_PROVIDER === "nvidia" ? NVIDIA_MODELS : CLAUDE_MODELS;
+
+// Legacy single-model export (kept for backward compat)
+export const AI_MODEL = ACTIVE_MODELS.roast;
+
+// ── Rate limits ───────────────────────────────────────────────────────────────
 export const RATE_LIMITS = {
   roast:       { limit: 5,  windowSecs: 3600 },
   createOrder: { limit: 10, windowSecs: 3600 },
   rewrite:     { limit: 20, windowSecs: 3600 },
 } as const;
 
+// ── Resume constraints ────────────────────────────────────────────────────────
 export const RESUME = {
   minChars:    100,
   maxChars:    50_000,
   aiMaxChars:  8_000,
 } as const;
 
-// All prices in paise (1 INR = 100 paise)
+// ── Services & Pricing (all prices in paise, 1 INR = 100 paise) ──────────────
 export const SERVICES = {
   roast: {
     label:     "Resume Roast",
@@ -30,21 +52,6 @@ export const SERVICES = {
     priceLabel:  "₹99",
     maxTokens:   5000,
   },
-  // Uncomment when ready to launch:
-  // linkedinOptimizer: {
-  //   label:       "LinkedIn Profile Optimizer",
-  //   description: "Summary, headline, experience bullets",
-  //   pricePaise:  29_900,   // ₹299
-  //   priceLabel:  "₹299",
-  //   maxTokens:   2048,
-  // },
-  // coverLetter: {
-  //   label:       "Cover Letter Generator",
-  //   description: "Tailored to the specific role",
-  //   pricePaise:  19_900,   // ₹199
-  //   priceLabel:  "₹199",
-  //   maxTokens:   1024,
-  // },
 } as const;
 
 export type ServiceKey = keyof typeof SERVICES;
@@ -52,10 +59,11 @@ export type ServiceKey = keyof typeof SERVICES;
 export const APP_NAME = "Resume Roaster";
 export const BRAND_COLOR = "#ff4444"; // neon red — matches the roast energy
 
+// ── Coupon codes ──────────────────────────────────────────────────────────────
 /**
  * COUPON_CODES — env var format: "CODE1:100,CODE2:50"
  * Each entry is CODE:discountPercent. 100 = fully free.
- * Set COUPON_CODES in Railway env to manage coupons without redeploy.
+ * Set COUPON_CODES in Railway/Supabase env to manage coupons without redeploy.
  */
 export function parseCouponCodes(): Map<string, number> {
   const raw = process.env.COUPON_CODES ?? "";

@@ -1,8 +1,11 @@
 [build]
-builder = "dockerfile"
-dockerfilePath = "Dockerfile"
+builder          = "dockerfile"
+dockerfilePath   = "Dockerfile"
 
 [deploy]
+# Run DB migrations on every deploy, then start the app.
+# Requires DATABASE_URL to be set in Railway environment variables.
+startCommand       = "node server.js"
 healthcheckPath    = "/api/health"
 healthcheckTimeout = 10
 restartPolicyType  = "on_failure"
