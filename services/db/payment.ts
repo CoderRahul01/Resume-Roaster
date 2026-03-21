@@ -5,9 +5,9 @@ export async function createPayment(data: {
   amount: number;
   service: string;
   userId?: string;
-  couponId?: string;
+  couponCode?: string;
 }) {
-  return prisma.payment.create({ data });
+  return prisma.payment.create({ data: { ...data, status: "CREATED" } });
 }
 
 export async function updatePaymentStatus(
