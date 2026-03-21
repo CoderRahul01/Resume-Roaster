@@ -19,10 +19,10 @@ export const CLAUDE_MODELS = {
   rewrite: "claude-sonnet-4-5",
 } as const;
 
-// Active models — resolved automatically from AI_PROVIDER
+// Active models — resolved automatically from AI_PROVIDER above
 export const ACTIVE_MODELS = AI_PROVIDER === "nvidia" ? NVIDIA_MODELS : CLAUDE_MODELS;
 
-// Legacy single-model export (kept for backward compat)
+// Legacy export kept for backward compat
 export const AI_MODEL = ACTIVE_MODELS.roast;
 
 // ── Rate limits ───────────────────────────────────────────────────────────────
@@ -52,12 +52,20 @@ export const SERVICES = {
     priceLabel:  "₹99",
     maxTokens:   5000,
   },
+  // Uncomment when ready to launch:
+  // linkedinOptimizer: {
+  //   label:       "LinkedIn Profile Optimizer",
+  //   description: "Summary, headline, experience bullets",
+  //   pricePaise:  29_900,   // ₹299
+  //   priceLabel:  "₹299",
+  //   maxTokens:   2048,
+  // },
 } as const;
 
 export type ServiceKey = keyof typeof SERVICES;
 
 export const APP_NAME = "Resume Roaster";
-export const BRAND_COLOR = "#ff4444"; // neon red — matches the roast energy
+export const BRAND_COLOR = "#ff4444"; // neon red
 
 // ── Free Mode (bypass payment for testing) ─────────────────────────────────
 // Set true to skip Razorpay and allow rewrites without payment.

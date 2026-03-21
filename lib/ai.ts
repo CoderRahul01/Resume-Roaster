@@ -24,7 +24,7 @@ export async function callAI(params: AICallParams): Promise<string> {
   return callClaude(params);
 }
 
-// ── NVIDIA NIM (OpenAI-compatible) ───────────────────────────────────────────
+// ── NVIDIA NIM (OpenAI-compatible, free tier) ─────────────────────────────────
 
 async function callNvidiaNim({
   model,
@@ -61,7 +61,7 @@ async function callNvidiaNim({
   return data.choices?.[0]?.message?.content ?? "";
 }
 
-// ── Anthropic Claude ─────────────────────────────────────────────────────────
+// ── Anthropic Claude ──────────────────────────────────────────────────────────
 
 async function callClaude({
   model,
