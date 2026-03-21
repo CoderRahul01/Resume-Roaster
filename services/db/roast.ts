@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@/generated/prisma/client";
 import { RoastResponse } from "@/types";
 
 export async function saveRoast(data: {
@@ -11,7 +12,7 @@ export async function saveRoast(data: {
     data: {
       resumeText: data.resumeText,
       overallScore: data.overallScore,
-      feedback: data.feedback as unknown as Record<string, unknown>[],
+      feedback: data.feedback as unknown as Prisma.InputJsonValue,
       authorId: data.authorId,
     },
   });
