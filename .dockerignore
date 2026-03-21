@@ -33,10 +33,6 @@ Techdoc.md
 test
 coverage
 
-# Prisma (unused)
-prisma
-prisma.config.ts
-
 # Docker files themselves
 Dockerfile
 docker-compose.yml

@@ -2,6 +2,7 @@
 
 # ─── Stage 1: Install dependencies ───────────────────────────────────────────
 FROM node:22-alpine AS deps
+RUN apk add --no-cache openssl
 RUN corepack enable && corepack prepare pnpm@latest --activate
 WORKDIR /app
 
@@ -10,6 +11,7 @@ RUN pnpm install --frozen-lockfile
 
 # ─── Stage 2: Build ──────────────────────────────────────────────────────────
 FROM node:22-alpine AS builder
+RUN apk add --no-cache openssl
 RUN corepack enable && corepack prepare pnpm@latest --activate
 WORKDIR /app
 
