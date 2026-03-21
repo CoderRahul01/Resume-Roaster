@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { callAI } from "@/lib/ai";
 import { checkRateLimit, rateLimitHeaders } from "@/lib/ratelimit";
 import { createHmac } from "crypto";
-import { RATE_LIMITS, RESUME, SERVICES, ACTIVE_MODELS, parseCouponCodes } from "@/lib/config";
+import { RATE_LIMITS, RESUME, SERVICES, ACTIVE_MODELS, FREE_MODE, parseCouponCodes } from "@/lib/config";
 import { StructuredResume } from "@/types";
 
 export async function POST(req: NextRequest) {
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
       return pct === 100;
     })();
 
-    if (!isCouponFree) {
+    if (!FREE_MODE && !isCouponFree) {
       // Require Razorpay payment fields and verify HMAC-SHA256 signature
       if (!razorpay_payment_id || !razorpay_order_id || !razorpay_signature) {
         return NextResponse.json({ error: "Incomplete payment data." }, { status: 400 });
@@ -53,6 +53,12 @@ export async function POST(req: NextRequest) {
         .digest("hex");
 
       if (generated_signature !== razorpay_signature) {
+        console.error("HMAC mismatch", {
+          order_id:   razorpay_order_id,
+          payment_id: razorpay_payment_id,
+          received:   razorpay_signature?.slice(0, 8) + "…",
+          expected:   generated_signature?.slice(0, 8) + "…",
+        });
         return NextResponse.json(
           { error: "Payment verification failed. If this is an error, contact support." },
           { status: 403 },
@@ -60,7 +66,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Truncate before sending to AI to control token spend
     const resumeForAI = resumeText.slice(0, RESUME.aiMaxChars);
 
     const prompt = `You are a professional resume writer and ATS optimization expert.
@@ -117,7 +122,7 @@ ${resumeForAI}
       maxTokens: SERVICES.rewrite.maxTokens,
     });
 
-    // Strip markdown code fences if the model wraps the response
+    // Strip markdown code fences if the model wraps response in ```json ... ```
     const fenceMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
     const raw = (fenceMatch ? fenceMatch[1] : content).trim();
 

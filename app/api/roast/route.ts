@@ -33,7 +33,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Truncate before sending to AI to control token spend
     const resumeForAI = resumeText.slice(0, RESUME.aiMaxChars);
 
     const prompt = `You are a brutal, honest, and high-standard resume reviewer. You are part of the 'Resume Roaster' service.
@@ -69,7 +68,7 @@ ${resumeForAI}
       maxTokens: SERVICES.roast.maxTokens,
     });
 
-    // Strip markdown code fences if the model wraps the response
+    // Strip markdown code fences if the model wraps response in ```json ... ```
     const fenceMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
     const raw = (fenceMatch ? fenceMatch[1] : content).trim();
 

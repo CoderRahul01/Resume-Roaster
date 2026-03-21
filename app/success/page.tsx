@@ -176,7 +176,7 @@ function LoadingState() {
         <div className="flex justify-center">
           <div className="w-10 h-10 border-2 border-white/[0.10] border-t-[#ff4444]/80 rounded-full animate-spin" />
         </div>
-        <h1 className="text-xl sm:text-2xl font-bold text-[#f8f8f8]">Claude is rewriting your resume</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-[#f8f8f8]">AI is rewriting your resume…</h1>
         <p className="text-zinc-500 text-sm font-mono">{LOADING_STEPS[step]}</p>
       </div>
 

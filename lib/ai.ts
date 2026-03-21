@@ -1,6 +1,6 @@
 /**
  * Unified AI client — routes to NVIDIA NIM (free) or Anthropic Claude based on AI_PROVIDER in config.
- * To switch providers, change ONE line in lib/config.ts:
+ * To switch providers, change the ONE line in lib/config.ts:
  *   export const AI_PROVIDER: "nvidia" | "claude" = "nvidia";
  */
 
@@ -13,7 +13,10 @@ export interface AICallParams {
   maxTokens: number;
 }
 
-/** Call the active AI provider and return the raw text response. */
+/**
+ * Call the active AI provider and return the raw text response.
+ * Throws if the API key is missing or the request fails.
+ */
 export async function callAI(params: AICallParams): Promise<string> {
   if (AI_PROVIDER === "nvidia") {
     return callNvidiaNim(params);

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { CheckIcon } from "lucide-react";
-import { SERVICES, BRAND_COLOR } from "@/lib/config";
+import { SERVICES, BRAND_COLOR, FREE_MODE } from "@/lib/config";
 import { CouponInput } from "@/components/CouponInput";
 
 interface PaywallBannerProps {
@@ -71,6 +71,20 @@ export function PaywallBanner({ resumeText, score }: PaywallBannerProps) {
   async function handleUnlock() {
     setIsLoading(true);
     try {
+      // FREE_MODE: skip Razorpay entirely for testing
+      if (FREE_MODE) {
+        sessionStorage.setItem(
+          "paymentData",
+          JSON.stringify({
+            razorpay_payment_id: "free_mode",
+            razorpay_order_id:   "free_mode",
+            razorpay_signature:  "free_mode",
+          }),
+        );
+        router.push("/success");
+        return;
+      }
+
       const res = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -101,18 +115,43 @@ export function PaywallBanner({ resumeText, score }: PaywallBannerProps) {
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const rzp = new (window as any).Razorpay({
-        key:       data.keyId,
-        amount:    data.amount,
-        currency:  data.currency,
-        order_id:  data.orderId,
-        name:      "Resume Roaster",
+        key:         data.keyId,
+        currency:    data.currency,
+        order_id:    data.orderId,
+        name:        "Resume Roaster",
         description: service.description,
+        prefill: {
+          name:    "",
+          email:   "",
+          contact: "",
+        },
         handler(response: RazorpayResponse) {
           sessionStorage.setItem("paymentData", JSON.stringify(response));
+          setIsLoading(false);
           router.push("/success");
         },
-        modal: { ondismiss() { setIsLoading(false); } },
+        modal: {
+          ondismiss() { setIsLoading(false); },
+          escape: false,
+        },
         theme: { color: BRAND_COLOR },
+      });
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      rzp.on("payment.failed", (response: any) => {
+        setIsLoading(false);
+        // Log all fields so we can diagnose failures
+        console.error("Razorpay payment.failed:", {
+          code:        response?.error?.code,
+          description: response?.error?.description,
+          source:      response?.error?.source,
+          step:        response?.error?.step,
+          reason:      response?.error?.reason,
+          order_id:    response?.error?.metadata?.order_id,
+          payment_id:  response?.error?.metadata?.payment_id,
+        });
+        const msg = response?.error?.description ?? "Payment failed. Please try again.";
+        toast.error(msg);
       });
 
       rzp.open();
@@ -190,7 +229,9 @@ export function PaywallBanner({ resumeText, score }: PaywallBannerProps) {
           shadow-none
         "
       >
-        {isCouponFree
+        {FREE_MODE
+          ? "Get Free Rewrite →"
+          : isCouponFree
           ? "Get My Free Rewrite →"
           : isLoading
           ? "Opening checkout..."
