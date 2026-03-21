@@ -24,7 +24,7 @@ export async function createRazorpayOrder(
 
   const razorpay = getRazorpayClient();
   const receipt = `rcpt_${randomUUID().substring(0, 8)}`;
-  const amount = discountedPaise ?? (service as any).pricePaise;
+  const amount = discountedPaise ?? (service as { pricePaise: number }).pricePaise;
 
   const order = await razorpay.orders.create({
     amount,

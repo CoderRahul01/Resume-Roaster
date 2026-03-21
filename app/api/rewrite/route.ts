@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAnthropicClient } from "@/lib/anthropic";
 import { checkRateLimit, rateLimitHeaders } from "@/lib/ratelimit";
 import { createHmac } from "crypto";
-import { RATE_LIMITS, RESUME, SERVICES, AI_MODEL, FREE_MODE } from "@/lib/config";
+import { RATE_LIMITS, RESUME, SERVICES, AI_MODEL, parseCouponCodes } from "@/lib/config";
 import { StructuredResume } from "@/types";
 
 export async function POST(req: NextRequest) {
@@ -21,6 +21,9 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { razorpay_payment_id, razorpay_order_id, razorpay_signature } = body ?? {};
     const resumeText: unknown = body?.resumeText;
+    const couponCode: string | undefined = typeof body?.couponCode === "string"
+      ? body.couponCode.trim().toUpperCase()
+      : undefined;
 
     if (typeof resumeText !== "string") {
       return NextResponse.json({ error: "Resume text is required." }, { status: 400 });
@@ -29,8 +32,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Resume text is too long." }, { status: 400 });
     }
 
-    if (!FREE_MODE) {
-      // Require payment fields and verify Razorpay HMAC-SHA256 signature
+    // Check if this is a 100%-off coupon redemption
+    const isCouponFree = (() => {
+      if (!couponCode) return false;
+      const pct = parseCouponCodes().get(couponCode);
+      return pct === 100;
+    })();
+
+    if (!isCouponFree) {
+      // Require Razorpay payment fields and verify HMAC-SHA256 signature
       if (!razorpay_payment_id || !razorpay_order_id || !razorpay_signature) {
         return NextResponse.json({ error: "Incomplete payment data." }, { status: 400 });
       }

@@ -26,8 +26,8 @@ export const SERVICES = {
   rewrite: {
     label:       "AI Resume Rewrite",
     description: "ATS-optimized, achievement-focused",
-    pricePaise:  49_900,   // ₹499
-    priceLabel:  "₹499",
+    pricePaise:  9_900,    // ₹99
+    priceLabel:  "₹99",
     maxTokens:   5000,
   },
   // Uncomment when ready to launch:
@@ -47,11 +47,27 @@ export const SERVICES = {
   // },
 } as const;
 
+export type ServiceKey = keyof typeof SERVICES;
+
 export const APP_NAME = "Resume Roaster";
 export const BRAND_COLOR = "#ff4444"; // neon red — matches the roast energy
 
 /**
- * FREE_MODE — set true to bypass Razorpay payment for testing.
- * Set back to false when live payments are working.
+ * COUPON_CODES — env var format: "CODE1:100,CODE2:50"
+ * Each entry is CODE:discountPercent. 100 = fully free.
+ * Set COUPON_CODES in Railway env to manage coupons without redeploy.
  */
-export const FREE_MODE = true;
+export function parseCouponCodes(): Map<string, number> {
+  const raw = process.env.COUPON_CODES ?? "";
+  const map = new Map<string, number>();
+  for (const entry of raw.split(",")) {
+    const [code, pct] = entry.trim().split(":");
+    if (code && pct) {
+      const discount = parseInt(pct, 10);
+      if (!isNaN(discount) && discount > 0 && discount <= 100) {
+        map.set(code.toUpperCase(), discount);
+      }
+    }
+  }
+  return map;
+}

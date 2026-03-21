@@ -17,12 +17,13 @@ export default function SuccessPage() {
     razorpay_payment_id: string;
     razorpay_order_id: string;
     razorpay_signature: string;
+    couponCode?: string;
   } | null>(null);
   const [resumeText, setResumeText] = useState("");
   const [sessionExpired, setSessionExpired] = useState(false);
 
   async function fetchRewrite(
-    payment: { razorpay_payment_id: string; razorpay_order_id: string; razorpay_signature: string },
+    payment: { razorpay_payment_id: string; razorpay_order_id: string; razorpay_signature: string; couponCode?: string },
     resume: string,
   ) {
     setIsLoading(true);
@@ -60,6 +61,7 @@ export default function SuccessPage() {
       razorpay_payment_id: string;
       razorpay_order_id: string;
       razorpay_signature: string;
+      couponCode?: string;
     };
     try {
       payment = JSON.parse(storedPayment);
@@ -328,7 +330,7 @@ function ReadyState({
         </Link>
         <div className="pt-1">
           <a
-            href={`https://twitter.com/intent/tweet?text=${encodeURIComponent("I just got my resume rewritten by AI for ₹499. It's actually good. Try it free → https://resumeroaster.in")}`}
+            href={`https://twitter.com/intent/tweet?text=${encodeURIComponent("I just got my resume rewritten by AI for ₹99. It's actually good. Try it free → https://resumeroaster.in")}`}
             target="_blank"
             rel="noopener noreferrer"
           >
