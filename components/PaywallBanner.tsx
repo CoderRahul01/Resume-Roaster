@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { CheckIcon } from "lucide-react";
-import { SERVICES, BRAND_COLOR } from "@/lib/config";
+import { SERVICES, BRAND_COLOR, FREE_MODE } from "@/lib/config";
 import { CouponInput } from "@/components/CouponInput";
 
 interface PaywallBannerProps {
@@ -71,6 +71,20 @@ export function PaywallBanner({ resumeText, score }: PaywallBannerProps) {
   async function handleUnlock() {
     setIsLoading(true);
     try {
+      // FREE_MODE: skip Razorpay entirely for testing
+      if (FREE_MODE) {
+        sessionStorage.setItem(
+          "paymentData",
+          JSON.stringify({
+            razorpay_payment_id: "free_mode",
+            razorpay_order_id:   "free_mode",
+            razorpay_signature:  "free_mode",
+          }),
+        );
+        router.push("/success");
+        return;
+      }
+
       const res = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -109,10 +123,17 @@ export function PaywallBanner({ resumeText, score }: PaywallBannerProps) {
         description: service.description,
         handler(response: RazorpayResponse) {
           sessionStorage.setItem("paymentData", JSON.stringify(response));
+          setIsLoading(false);
           router.push("/success");
         },
         modal: { ondismiss() { setIsLoading(false); } },
         theme: { color: BRAND_COLOR },
+      });
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      rzp.on("payment.failed", (response: any) => {
+        setIsLoading(false);
+        toast.error(response?.error?.description ?? "Payment failed. Please try again.");
       });
 
       rzp.open();
@@ -190,7 +211,9 @@ export function PaywallBanner({ resumeText, score }: PaywallBannerProps) {
           shadow-none
         "
       >
-        {isCouponFree
+        {FREE_MODE
+          ? "Get Free Rewrite →"
+          : isCouponFree
           ? "Get My Free Rewrite →"
           : isLoading
           ? "Opening checkout..."

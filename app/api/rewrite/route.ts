@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { callAI } from "@/lib/ai";
 import { checkRateLimit, rateLimitHeaders } from "@/lib/ratelimit";
 import { createHmac } from "crypto";
-import { RATE_LIMITS, RESUME, SERVICES, ACTIVE_MODELS, parseCouponCodes } from "@/lib/config";
+import { RATE_LIMITS, RESUME, SERVICES, ACTIVE_MODELS, FREE_MODE, parseCouponCodes } from "@/lib/config";
 import { StructuredResume } from "@/types";
 
 export async function POST(req: NextRequest) {
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
       return pct === 100;
     })();
 
-    if (!isCouponFree) {
+    if (!FREE_MODE && !isCouponFree) {
       // Require Razorpay payment fields and verify HMAC-SHA256 signature
       if (!razorpay_payment_id || !razorpay_order_id || !razorpay_signature) {
         return NextResponse.json({ error: "Incomplete payment data." }, { status: 400 });

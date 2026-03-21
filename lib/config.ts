@@ -59,6 +59,11 @@ export type ServiceKey = keyof typeof SERVICES;
 export const APP_NAME = "Resume Roaster";
 export const BRAND_COLOR = "#ff4444"; // neon red — matches the roast energy
 
+// ── Free Mode (bypass payment for testing) ─────────────────────────────────
+// Set true to skip Razorpay and allow rewrites without payment.
+// Set false before going live.
+export const FREE_MODE = false; // ← set true to bypass payments for testing
+
 // ── Coupon codes ──────────────────────────────────────────────────────────────
 /**
  * COUPON_CODES — env var format: "CODE1:100,CODE2:50"
