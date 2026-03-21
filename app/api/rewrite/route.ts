@@ -53,6 +53,12 @@ export async function POST(req: NextRequest) {
         .digest("hex");
 
       if (generated_signature !== razorpay_signature) {
+        console.error("HMAC mismatch", {
+          order_id:   razorpay_order_id,
+          payment_id: razorpay_payment_id,
+          received:   razorpay_signature?.slice(0, 8) + "…",
+          expected:   generated_signature?.slice(0, 8) + "…",
+        });
         return NextResponse.json(
           { error: "Payment verification failed. If this is an error, contact support." },
           { status: 403 },

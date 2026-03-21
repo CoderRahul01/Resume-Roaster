@@ -115,25 +115,43 @@ export function PaywallBanner({ resumeText, score }: PaywallBannerProps) {
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const rzp = new (window as any).Razorpay({
-        key:       data.keyId,
-        amount:    data.amount,
-        currency:  data.currency,
-        order_id:  data.orderId,
-        name:      "Resume Roaster",
+        key:         data.keyId,
+        currency:    data.currency,
+        order_id:    data.orderId,
+        name:        "Resume Roaster",
         description: service.description,
+        prefill: {
+          name:    "",
+          email:   "",
+          contact: "",
+        },
         handler(response: RazorpayResponse) {
           sessionStorage.setItem("paymentData", JSON.stringify(response));
           setIsLoading(false);
           router.push("/success");
         },
-        modal: { ondismiss() { setIsLoading(false); } },
+        modal: {
+          ondismiss() { setIsLoading(false); },
+          escape: false,
+        },
         theme: { color: BRAND_COLOR },
       });
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       rzp.on("payment.failed", (response: any) => {
         setIsLoading(false);
-        toast.error(response?.error?.description ?? "Payment failed. Please try again.");
+        // Log all fields so we can diagnose failures
+        console.error("Razorpay payment.failed:", {
+          code:        response?.error?.code,
+          description: response?.error?.description,
+          source:      response?.error?.source,
+          step:        response?.error?.step,
+          reason:      response?.error?.reason,
+          order_id:    response?.error?.metadata?.order_id,
+          payment_id:  response?.error?.metadata?.payment_id,
+        });
+        const msg = response?.error?.description ?? "Payment failed. Please try again.";
+        toast.error(msg);
       });
 
       rzp.open();
