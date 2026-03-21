@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { CheckIcon } from "lucide-react";
-import { SERVICES, BRAND_COLOR, FREE_MODE } from "@/lib/config";
+import { SERVICES, BRAND_COLOR } from "@/lib/config";
+import { CouponInput } from "@/components/CouponInput";
 
 interface PaywallBannerProps {
   resumeText: string;
@@ -39,33 +40,62 @@ const BENEFITS = [
 
 export function PaywallBanner({ resumeText, score }: PaywallBannerProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const router    = useRouter();
-  const service   = SERVICES.rewrite;
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discountPercent: number } | null>(null);
+  const router = useRouter();
+  const service = SERVICES.rewrite;
+
+  const effectivePrice = appliedCoupon
+    ? Math.max(Math.floor(service.pricePaise * (1 - appliedCoupon.discountPercent / 100)), 0)
+    : service.pricePaise;
+  const effectivePriceLabel = effectivePrice === 0
+    ? "FREE"
+    : `₹${effectivePrice / 100}`;
+
+  async function handleValidateCoupon(code: string) {
+    const res = await fetch("/api/validate-coupon", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code }),
+    });
+    const data = await res.json();
+    if (data.valid) {
+      setAppliedCoupon({ code: data.code, discountPercent: data.discountPercent });
+    }
+    return data as { valid: boolean; discountPercent?: number; message?: string };
+  }
+
+  function handleClearCoupon() {
+    setAppliedCoupon(null);
+  }
 
   async function handleUnlock() {
-    // FREE_MODE: skip Razorpay entirely — go straight to rewrite
-    if (FREE_MODE) {
-      sessionStorage.setItem(
-        "paymentData",
-        JSON.stringify({
-          razorpay_payment_id: "free_mode",
-          razorpay_order_id:   "free_mode",
-          razorpay_signature:  "free_mode",
-        }),
-      );
-      router.push("/success");
-      return;
-    }
-
     setIsLoading(true);
     try {
       const res = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ resumeText }),
+        body: JSON.stringify({
+          resumeText,
+          couponCode: appliedCoupon?.code,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to create order");
+
+      // 100% off coupon — skip Razorpay
+      if (data.isFree) {
+        sessionStorage.setItem(
+          "paymentData",
+          JSON.stringify({
+            razorpay_payment_id: `coupon_${appliedCoupon?.code ?? "free"}`,
+            razorpay_order_id:   "coupon_order",
+            razorpay_signature:  "coupon_exempt",
+            couponCode:          appliedCoupon?.code,
+          }),
+        );
+        router.push("/success");
+        return;
+      }
 
       await loadRazorpayScript();
 
@@ -92,6 +122,8 @@ export function PaywallBanner({ resumeText, score }: PaywallBannerProps) {
     }
   }
 
+  const isCouponFree = appliedCoupon?.discountPercent === 100;
+
   return (
     <div className="rounded-2xl border border-white/[0.10] bg-white/[0.02] p-6 space-y-5">
       {/* Header */}
@@ -115,12 +147,26 @@ export function PaywallBanner({ resumeText, score }: PaywallBannerProps) {
         ))}
       </ul>
 
+      {/* Coupon input */}
+      <CouponInput
+        onApply={handleValidateCoupon}
+        onClear={handleClearCoupon}
+        applied={appliedCoupon}
+      />
+
       {/* Price */}
       <div className="flex items-baseline gap-2">
-        {FREE_MODE ? (
+        {isCouponFree ? (
           <>
             <span className="text-3xl font-black text-[#ff4444] tracking-tight">FREE</span>
-            <span className="text-xs text-zinc-600 font-mono">limited time · no payment needed</span>
+            <span className="text-xs text-zinc-600 font-mono line-through mr-1">{service.priceLabel}</span>
+            <span className="text-xs text-green-400 font-mono">coupon applied</span>
+          </>
+        ) : appliedCoupon ? (
+          <>
+            <span className="text-3xl font-black text-[#f8f8f8] tracking-tight">{effectivePriceLabel}</span>
+            <span className="text-xs text-zinc-600 font-mono line-through mr-1">{service.priceLabel}</span>
+            <span className="text-xs text-green-400 font-mono">{appliedCoupon.discountPercent}% off</span>
           </>
         ) : (
           <>
@@ -144,11 +190,11 @@ export function PaywallBanner({ resumeText, score }: PaywallBannerProps) {
           shadow-none
         "
       >
-        {FREE_MODE
+        {isCouponFree
           ? "Get My Free Rewrite →"
           : isLoading
           ? "Opening checkout..."
-          : "Fix My Resume for ₹499 →"
+          : `Fix My Resume for ${effectivePriceLabel} →`
         }
       </Button>
 
