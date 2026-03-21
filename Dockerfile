@@ -21,6 +21,7 @@ COPY . .
 ARG NEXT_PUBLIC_BASE_URL=https://resumeroaster.in
 ENV NEXT_PUBLIC_BASE_URL=$NEXT_PUBLIC_BASE_URL
 
+RUN pnpm prisma generate
 RUN pnpm build
 
 # ─── Stage 3: Production runner ──────────────────────────────────────────────
