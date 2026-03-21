@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { callAI } from "@/lib/ai";
 import { checkRateLimit, rateLimitHeaders } from "@/lib/ratelimit";
 import { RATE_LIMITS, RESUME, SERVICES, ACTIVE_MODELS } from "@/lib/config";
+import { safeErrorMessage } from "@/lib/api-error";
 import { RoastResponse } from "@/types";
 
 export async function POST(req: NextRequest) {
@@ -89,9 +90,8 @@ ${resumeForAI}
     });
   } catch (error) {
     console.error("Roast API Error:", error);
-    const message = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { error: `The roaster had a meltdown: ${message}` },
+      { error: safeErrorMessage(error, "The roaster had a meltdown. Please try again.") },
       { status: 500 }
     );
   }

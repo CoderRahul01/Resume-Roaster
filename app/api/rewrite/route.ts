@@ -3,6 +3,7 @@ import { callAI } from "@/lib/ai";
 import { checkRateLimit, rateLimitHeaders } from "@/lib/ratelimit";
 import { createHmac } from "crypto";
 import { RATE_LIMITS, RESUME, SERVICES, ACTIVE_MODELS, parseCouponCodes } from "@/lib/config";
+import { safeErrorMessage } from "@/lib/api-error";
 import { StructuredResume } from "@/types";
 
 export async function POST(req: NextRequest) {
@@ -156,9 +157,8 @@ ${resumeForAI}
     );
   } catch (error) {
     console.error("Rewrite API Error:", error);
-    const message = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { error: `The rewriter had a meltdown: ${message}` },
+      { error: safeErrorMessage(error, "The rewriter had a meltdown. Please try again.") },
       { status: 500 }
     );
   }
