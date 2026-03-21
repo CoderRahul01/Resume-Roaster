@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAnthropicClient } from "@/lib/anthropic";
+import { callAI } from "@/lib/ai";
 import { checkRateLimit, rateLimitHeaders } from "@/lib/ratelimit";
 import { createHmac } from "crypto";
-import { RATE_LIMITS, RESUME, SERVICES, AI_MODEL, parseCouponCodes } from "@/lib/config";
+import { RATE_LIMITS, RESUME, SERVICES, ACTIVE_MODELS, parseCouponCodes } from "@/lib/config";
 import { StructuredResume } from "@/types";
 
 export async function POST(req: NextRequest) {
@@ -63,8 +63,6 @@ export async function POST(req: NextRequest) {
     // Truncate before sending to AI to control token spend
     const resumeForAI = resumeText.slice(0, RESUME.aiMaxChars);
 
-    const anthropic = getAnthropicClient();
-
     const prompt = `You are a professional resume writer and ATS optimization expert.
 Rewrite the resume below to be high-impact, ATS-friendly, and achievement-focused.
 
@@ -112,15 +110,14 @@ Original resume:
 ${resumeForAI}
 ---`;
 
-    const message = await anthropic.messages.create({
-      model: AI_MODEL,
-      max_tokens: SERVICES.rewrite.maxTokens,
-      system: "You are the Resume Roaster AI rewriter. You only speak in JSON.",
-      messages: [{ role: "user", content: prompt }],
+    const content = await callAI({
+      model: ACTIVE_MODELS.rewrite,
+      systemPrompt: "You are the Resume Roaster AI rewriter. You only speak in JSON.",
+      userPrompt: prompt,
+      maxTokens: SERVICES.rewrite.maxTokens,
     });
 
-    const content = message.content[0].type === "text" ? message.content[0].text : "";
-    // Strip markdown code fences if Claude wraps response in ```json ... ```
+    // Strip markdown code fences if the model wraps the response
     const fenceMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
     const raw = (fenceMatch ? fenceMatch[1] : content).trim();
 
@@ -128,7 +125,7 @@ ${resumeForAI}
     try {
       structured = JSON.parse(raw);
     } catch {
-      console.error("Rewrite API: Claude returned invalid JSON:", raw);
+      console.error("Rewrite API: AI returned invalid JSON:", raw);
       return NextResponse.json(
         { error: "The rewriter returned an invalid response. Please try again." },
         { status: 500 }

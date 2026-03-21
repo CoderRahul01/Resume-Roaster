@@ -88,7 +88,20 @@ model Payment {
   service           String
   userId            String?
   user              User?    @relation(fields: [userId], references: [id])
-  couponId          String?
+  couponCode        String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+}
+
+model Coupon {
+  id              String    @id @default(cuid())
+  code            String    @unique
+  discountPercent Int       @default(0)
+  isActive        Boolean   @default(true)
+  maxUses         Int       @default(100)
+  currentUses     Int       @default(0)
+  validFrom       DateTime  @default(now())
+  validUntil      DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 }
