@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAnthropicClient } from "@/lib/anthropic";
+import { callAI } from "@/lib/ai";
 import { checkRateLimit, rateLimitHeaders } from "@/lib/ratelimit";
-import { RATE_LIMITS, RESUME, SERVICES, AI_MODEL } from "@/lib/config";
+import { RATE_LIMITS, RESUME, SERVICES, ACTIVE_MODELS } from "@/lib/config";
 import { RoastResponse } from "@/types";
 
 export async function POST(req: NextRequest) {
@@ -36,8 +36,6 @@ export async function POST(req: NextRequest) {
     // Truncate before sending to AI to control token spend
     const resumeForAI = resumeText.slice(0, RESUME.aiMaxChars);
 
-    const anthropic = getAnthropicClient();
-
     const prompt = `You are a brutal, honest, and high-standard resume reviewer. You are part of the 'Resume Roaster' service.
 Your goal is to provide a 'roast' of the user's resume.
 Be sharp, witty, and slightly mean, but provide actionable (though painful) truth.
@@ -64,15 +62,14 @@ Here is the resume text:
 ${resumeForAI}
 ---`;
 
-    const message = await anthropic.messages.create({
-      model: AI_MODEL,
-      max_tokens: SERVICES.roast.maxTokens,
-      system: "You are the Resume Roaster AI. You only speak in JSON.",
-      messages: [{ role: "user", content: prompt }],
+    const content = await callAI({
+      model: ACTIVE_MODELS.roast,
+      systemPrompt: "You are the Resume Roaster AI. You only speak in JSON.",
+      userPrompt: prompt,
+      maxTokens: SERVICES.roast.maxTokens,
     });
 
-    const content = message.content[0].type === "text" ? message.content[0].text : "";
-    // Strip markdown code fences if Claude wraps response in ```json ... ```
+    // Strip markdown code fences if the model wraps the response
     const fenceMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
     const raw = (fenceMatch ? fenceMatch[1] : content).trim();
 
@@ -80,7 +77,7 @@ ${resumeForAI}
     try {
       roastData = JSON.parse(raw);
     } catch {
-      console.error("Roast API: Claude returned invalid JSON:", raw);
+      console.error("Roast API: AI returned invalid JSON:", raw);
       return NextResponse.json(
         { error: "The roaster returned an invalid response. Please try again." },
         { status: 500 }

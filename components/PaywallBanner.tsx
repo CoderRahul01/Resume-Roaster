@@ -133,7 +133,7 @@ export function PaywallBanner({ resumeText, score }: PaywallBannerProps) {
         </h3>
         <p className="text-zinc-500 text-sm">
           Every day you send the old version, you lose an interview.
-          Claude AI rewrites your entire resume — keeping your story, fixing everything else.
+          Our AI rewrites your entire resume — keeping your story, fixing everything else.
         </p>
       </div>
 

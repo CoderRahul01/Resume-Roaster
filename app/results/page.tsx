@@ -8,6 +8,7 @@ import { RoastSkeleton } from "@/components/RoastSkeleton";
 import { RewriteBlur } from "@/components/RewriteBlur";
 import { PaywallBanner } from "@/components/PaywallBanner";
 import { RoastResponse } from "@/types";
+import { SERVICES } from "@/lib/config";
 
 function ScoreBadge({ score }: { score: number }) {
   const color =
@@ -101,7 +102,7 @@ export default function ResultsPage() {
             <div className="flex items-center gap-2 mb-5">
               <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-widest">The Fix</h2>
               <span className="text-[10px] text-orange-400 bg-orange-500/10 border border-orange-500/20 px-2 py-0.5 rounded-full font-medium">
-                ₹499
+                {SERVICES.rewrite.priceLabel}
               </span>
             </div>
             <RewriteBlur />

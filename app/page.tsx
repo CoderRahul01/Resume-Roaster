@@ -9,6 +9,7 @@ import { RewriteBlur } from "@/components/RewriteBlur";
 import { PaywallBanner } from "@/components/PaywallBanner";
 import { ResumeDropzone } from "@/components/ResumeDropzone";
 import { RoastResponse } from "@/types";
+import { SERVICES } from "@/lib/config";
 
 function ScoreBadge({ score }: { score: number }) {
   const colorClass =
@@ -167,7 +168,7 @@ export default function HomePage() {
               <p className="text-zinc-500 text-sm sm:text-base md:text-lg max-w-md mx-auto leading-relaxed">
                 Upload your resume PDF. Get 6 brutal critiques + a score in seconds.
                 Fix it for{" "}
-                <span className="text-[#f8f8f8] font-semibold">₹499</span>.
+                <span className="text-[#f8f8f8] font-semibold">{SERVICES.rewrite.priceLabel}</span>.
               </p>
             </div>
           )}
@@ -261,7 +262,7 @@ export default function HomePage() {
               {[
                 { step: "01", label: "Upload PDF",  sub: "Drag & drop or tap to browse" },
                 { step: "02", label: "Get roasted", sub: "6 brutal critiques + score" },
-                { step: "03", label: "Fix it",       sub: "AI rewrite for ₹499" },
+                { step: "03", label: "Fix it",       sub: `AI rewrite for ${SERVICES.rewrite.priceLabel}` },
               ].map(({ step, label, sub }) => (
                 <div
                   key={step}
