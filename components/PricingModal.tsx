@@ -182,24 +182,6 @@ export function PricingModal({ score, isOpen, isLoading, appliedCoupon, onClose,
             </div>
           </div>
 
-          {/* Social proof strip */}
-          <div className="flex items-center gap-4 px-1">
-            <div className="flex -space-x-2">
-              {["A","R","K","S","P"].map((l, i) => (
-                <div
-                  key={i}
-                  className="w-7 h-7 rounded-full border-2 border-[#0b0b0f] flex items-center justify-center text-[10px] font-bold"
-                  style={{ background: ["#7c3aed","#0891b2","#b45309","#047857","#be123c"][i], animationDelay: `${i * 0.06}s` }}
-                >
-                  {l}
-                </div>
-              ))}
-            </div>
-            <p className="text-zinc-500 text-xs">
-              <span className="text-[#f8f8f8] font-semibold">2,847 people</span> fixed their resumes this month.
-            </p>
-          </div>
-
           {/* CTA */}
           <div className="space-y-3">
             <Button

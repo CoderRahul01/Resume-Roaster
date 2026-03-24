@@ -70,24 +70,24 @@ function ScoreBadge({ score }: { score: number }) {
   );
 }
 
-// ── Social proof ticker ───────────────────────────────────────────────────────
+// ── Value strip ───────────────────────────────────────────────────────────────
 
-function SocialProof() {
+function ValueStrip() {
   const items = [
-    { count: "2,847", label: "resumes roasted this month" },
-    { count: "4.2→7.8", label: "avg score improvement" },
-    { count: "₹99", label: "one-time, no subscription" },
+    { icon: "⚡", label: "Results in under 10 seconds" },
+    { icon: "🎯", label: "Specific to your actual resume" },
+    { icon: "₹99", label: "One-time · no subscription" },
   ];
 
   return (
     <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-      {items.map(({ count, label }, i) => (
+      {items.map(({ icon, label }, i) => (
         <div
           key={label}
           className="flex items-center gap-1.5 animate-count-up"
           style={{ animationDelay: `${0.3 + i * 0.12}s` }}
         >
-          <span className="font-black text-sm text-[#f8f8f8]">{count}</span>
+          <span className="text-xs text-[#f8f8f8] font-semibold">{icon}</span>
           <span className="text-zinc-600 text-xs font-mono">{label}</span>
         </div>
       ))}
@@ -213,9 +213,9 @@ export default function HomePage() {
                 {" "}— no subscription, no account.
               </p>
 
-              {/* Social proof */}
+              {/* Value strip */}
               <div className="pt-1">
-                <SocialProof />
+                <ValueStrip />
               </div>
             </div>
           )}
@@ -318,21 +318,6 @@ export default function HomePage() {
                 ))}
               </div>
 
-              {/* Testimonial strip */}
-              <div className="mt-4 rounded-xl border border-white/[0.06] bg-white/[0.015] px-5 py-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-600 to-blue-600 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
-                    R
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-zinc-400 text-xs leading-relaxed">
-                      &ldquo;Got roasted with a 3/10. Paid ₹99 for the rewrite. Got 3 interview calls the next week.
-                      Worth every rupee.&rdquo;
-                    </p>
-                    <p className="text-zinc-700 text-[10px] font-mono">Rahul S. · SDE-2 at Bangalore startup</p>
-                  </div>
-                </div>
-              </div>
             </div>
           )}
 

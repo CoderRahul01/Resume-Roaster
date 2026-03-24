@@ -49,7 +49,7 @@ export const RESUME = {
 export const SERVICES = {
   roast: {
     label:     "Resume Roast",
-    maxTokens: 1400,
+    maxTokens: 2000,
   },
   rewrite: {
     label:       "AI Resume Rewrite",

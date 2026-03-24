@@ -35,31 +35,47 @@ export async function POST(req: NextRequest) {
 
     const resumeForAI = resumeText.slice(0, RESUME.aiMaxChars);
 
-    const prompt = `You are a brutal, honest, and high-standard resume reviewer. You are part of the 'Resume Roaster' service.
-Your goal is to provide a 'roast' of the user's resume.
-Be sharp, witty, and slightly mean, but provide actionable (though painful) truth.
-Your tone should be like a Senior Engineering Manager who has seen 10,000 generic resumes and is sick of them.
+    const prompt = `You are a brutally honest senior hiring manager who has reviewed 10,000+ resumes. You are reviewing the specific resume below.
 
-Provide exactly 6 critique points and an overall score out of 10.
+SCORING RUBRIC — use this to assign overallScore (1–10):
+1–2: Disqualified on sight. Vague, no metrics, generic filler throughout.
+3–4: Below average. A few specific points but mostly weak bullets, no impact.
+5–6: Average. Passes ATS but won't stand out. Some metrics, but inconsistent.
+7–8: Above average. Clear impact, good structure, minor gaps.
+9–10: Excellent. Every bullet is specific, quantified, and compelling.
+
+RULES — you MUST follow these or the output is wrong:
+1. Read the resume carefully. Every critique must reference SPECIFIC content from THIS resume — quote a weak bullet, call out a missing metric, name the actual section that is weak.
+2. Do NOT write generic advice like "use action verbs" unless you quote an actual bullet from the resume that lacks them and show how to fix it.
+3. The overallScore must accurately reflect the quality of THIS resume — not a default 4 or 5. A strong resume should score 7–9. A weak one 2–4. Score what you actually see.
+4. Critique 6 distinct issues — do NOT repeat the same theme twice (e.g., don't have two critiques about "no metrics").
+5. Each fix must be CONCRETE and specific to this resume — e.g. "Change 'Worked on backend' to 'Engineered REST API handling 50K req/day'".
+6. The critique and fix fields must feel personal to this candidate, not copy-paste advice.
+
+Provide exactly 6 critique points and an overall score.
 Each critique point must have:
-- An emoji
-- A short, punchy title
-- A 2-3 sentence explanation of the failure (the critique)
-- A one-line actionable fix (the "fix") — a specific, concrete change they can make right now
+- emoji: a single emoji that matches the issue
+- title: a short punchy title (max 6 words)
+- critique: 2–3 sentences that quote or reference something SPECIFIC from this resume
+- fix: one concrete sentence showing the exact change to make
 
-Return ONLY a JSON response in the following format:
+Return ONLY valid JSON — no markdown, no extra text:
 {
   "roast": [
     { "emoji": "string", "title": "string", "critique": "string", "fix": "string" },
-    ...
+    { "emoji": "string", "title": "string", "critique": "string", "fix": "string" },
+    { "emoji": "string", "title": "string", "critique": "string", "fix": "string" },
+    { "emoji": "string", "title": "string", "critique": "string", "fix": "string" },
+    { "emoji": "string", "title": "string", "critique": "string", "fix": "string" },
+    { "emoji": "string", "title": "string", "critique": "string", "fix": "string" }
   ],
-  "overallScore": number
+  "overallScore": <number between 1 and 10>
 }
 
-Here is the resume text:
----
+Resume to roast:
+<resume>
 ${resumeForAI}
----`;
+</resume>`;
 
     const content = await callAI({
       model: ACTIVE_MODELS.roast,
