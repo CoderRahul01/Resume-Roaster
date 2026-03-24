@@ -9,14 +9,18 @@ export const AI_PROVIDER: "nvidia" | "claude" = "nvidia"; // ← "nvidia" | "cla
 
 // NVIDIA NIM free-tier models (https://build.nvidia.com/models)
 export const NVIDIA_MODELS = {
-  roast:   "meta/llama-3.3-70b-instruct",
-  rewrite: "meta/llama-3.3-70b-instruct",
+  roast:           "meta/llama-3.3-70b-instruct",
+  rewrite:         "meta/llama-3.3-70b-instruct",
+  coverLetter:     "meta/llama-3.3-70b-instruct",
+  linkedinOptimizer: "meta/llama-3.3-70b-instruct",
 } as const;
 
 // Anthropic Claude models (used when AI_PROVIDER = "claude")
 export const CLAUDE_MODELS = {
-  roast:   "claude-sonnet-4-5",
-  rewrite: "claude-sonnet-4-5",
+  roast:           "claude-sonnet-4-5",
+  rewrite:         "claude-sonnet-4-5",
+  coverLetter:     "claude-sonnet-4-5",
+  linkedinOptimizer: "claude-sonnet-4-5",
 } as const;
 
 // Active models — resolved automatically from AI_PROVIDER above
@@ -27,9 +31,11 @@ export const AI_MODEL = ACTIVE_MODELS.roast;
 
 // ── Rate limits ───────────────────────────────────────────────────────────────
 export const RATE_LIMITS = {
-  roast:       { limit: 5,  windowSecs: 3600 },
-  createOrder: { limit: 10, windowSecs: 3600 },
-  rewrite:     { limit: 20, windowSecs: 3600 },
+  roast:         { limit: 5,  windowSecs: 3600 },
+  createOrder:   { limit: 10, windowSecs: 3600 },
+  rewrite:       { limit: 20, windowSecs: 3600 },
+  coverLetter:   { limit: 10, windowSecs: 3600 },
+  linkedin:      { limit: 10, windowSecs: 3600 },
 } as const;
 
 // ── Resume constraints ────────────────────────────────────────────────────────
@@ -52,14 +58,20 @@ export const SERVICES = {
     priceLabel:  "₹99",
     maxTokens:   5000,
   },
-  // Uncomment when ready to launch:
-  // linkedinOptimizer: {
-  //   label:       "LinkedIn Profile Optimizer",
-  //   description: "Summary, headline, experience bullets",
-  //   pricePaise:  29_900,   // ₹299
-  //   priceLabel:  "₹299",
-  //   maxTokens:   2048,
-  // },
+  coverLetter: {
+    label:       "AI Cover Letter",
+    description: "Tailored to the job description",
+    pricePaise:  19_900,   // ₹199
+    priceLabel:  "₹199",
+    maxTokens:   2048,
+  },
+  linkedinOptimizer: {
+    label:       "LinkedIn Profile Optimizer",
+    description: "Summary, headline, experience bullets",
+    pricePaise:  29_900,   // ₹299
+    priceLabel:  "₹299",
+    maxTokens:   2048,
+  },
 } as const;
 
 export type ServiceKey = keyof typeof SERVICES;

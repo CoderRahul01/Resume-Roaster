@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { CheckIcon, ClipboardIcon, DownloadIcon, FileTextIcon } from "lucide-react";
 import { StructuredResume } from "@/types";
+import { CoverLetterBanner } from "@/components/CoverLetterBanner";
+import { LinkedInBanner } from "@/components/LinkedInBanner";
 
 export default function SuccessPage() {
   const [rewrittenResume, setRewrittenResume] = useState("");
@@ -140,6 +142,7 @@ export default function SuccessPage() {
           <ReadyState
             resume={rewrittenResume}
             structured={structured}
+            resumeText={resumeText}
             copied={copied}
             onCopy={handleCopy}
             onDownloadPDF={handleDownloadPDF}
@@ -259,12 +262,14 @@ function ErrorState({ error, canRetry, onRetry }: { error: string; canRetry: boo
 function ReadyState({
   resume,
   structured,
+  resumeText,
   copied,
   onCopy,
   onDownloadPDF,
 }: {
   resume: string;
   structured: StructuredResume | null;
+  resumeText: string;
   copied: boolean;
   onCopy: () => void;
   onDownloadPDF: () => void;
@@ -318,6 +323,15 @@ function ReadyState({
         <StructuredPreview data={structured} />
       ) : (
         <PlainTextPreview resume={resume} />
+      )}
+
+      {/* Upsell add-ons */}
+      {resumeText && (
+        <div className="space-y-3 pt-1">
+          <p className="text-[11px] text-zinc-600 font-mono tracking-widest uppercase text-center">Enhance your application</p>
+          <CoverLetterBanner resumeText={resumeText} />
+          <LinkedInBanner resumeText={resumeText} />
+        </div>
       )}
 
       {/* Footer */}
