@@ -73,7 +73,6 @@ export function ResumeDropzone({ onExtracted, isDisabled }: ResumeDropzoneProps)
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
-    // Only clear if leaving the zone entirely (not entering a child)
     if (!e.currentTarget.contains(e.relatedTarget as Node)) {
       setIsDragging(false);
     }
@@ -82,7 +81,7 @@ export function ResumeDropzone({ onExtracted, isDisabled }: ResumeDropzoneProps)
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) processFile(file);
-    e.target.value = ""; // allow re-selecting the same file
+    e.target.value = "";
   };
 
   function openFilePicker() {
@@ -92,45 +91,49 @@ export function ResumeDropzone({ onExtracted, isDisabled }: ResumeDropzoneProps)
   // ── Uploaded / ready state ──────────────────────────────────────────────────
   if (uploadedFile && !isExtracting) {
     return (
-      <div className="rounded-2xl border border-[#ff4444]/30 bg-[#ff4444]/[0.04] p-5 flex items-center justify-between gap-4">
-        <input
-          ref={inputRef}
-          type="file"
-          accept=".pdf,application/pdf"
-          onChange={handleInputChange}
-          className="hidden"
-        />
-        <div className="flex items-center gap-3 min-w-0">
-          {/* PDF icon */}
-          <div className="w-10 h-10 rounded-xl bg-[#ff4444]/10 border border-[#ff4444]/20 flex items-center justify-center flex-shrink-0">
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#ff4444"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-              <polyline points="14 2 14 8 20 8" />
-              <line x1="16" y1="13" x2="8" y2="13" />
-              <line x1="16" y1="17" x2="8" y2="17" />
-              <polyline points="10 9 9 9 8 9" />
-            </svg>
+      <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/[0.03] overflow-hidden">
+        {/* Green accent strip */}
+        <div className="h-[2px] w-full bg-gradient-to-r from-emerald-500/60 to-emerald-400/30" />
+        <div className="p-4 flex items-center justify-between gap-4">
+          <input
+            ref={inputRef}
+            type="file"
+            accept=".pdf,application/pdf"
+            onChange={handleInputChange}
+            className="hidden"
+          />
+          <div className="flex items-center gap-3 min-w-0">
+            {/* PDF icon */}
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0">
+              <svg
+                width="17"
+                height="17"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#10b981"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+                <polyline points="10 9 9 9 8 9" />
+              </svg>
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-[#f0f0f4] truncate">{uploadedFile}</p>
+              <p className="text-[11px] text-emerald-400/70 mt-0.5 font-mono">Extracted · ready to roast</p>
+            </div>
           </div>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-[#f8f8f8] truncate">{uploadedFile}</p>
-            <p className="text-[11px] text-zinc-500 mt-0.5 font-mono">Extracted · ready to roast</p>
-          </div>
+          <button
+            onClick={openFilePicker}
+            className="text-[11px] text-zinc-600 hover:text-zinc-300 font-mono whitespace-nowrap transition-colors flex-shrink-0 underline underline-offset-2"
+          >
+            Change
+          </button>
         </div>
-        <button
-          onClick={openFilePicker}
-          className="text-[11px] text-zinc-600 hover:text-zinc-300 font-mono whitespace-nowrap transition-colors flex-shrink-0 underline underline-offset-2"
-        >
-          Change
-        </button>
       </div>
     );
   }
@@ -138,9 +141,9 @@ export function ResumeDropzone({ onExtracted, isDisabled }: ResumeDropzoneProps)
   // ── Extracting / loading state ───────────────────────────────────────────────
   if (isExtracting) {
     return (
-      <div className="rounded-2xl border border-white/[0.08] bg-[#0e0e14] p-10 flex flex-col items-center gap-3">
+      <div className="rounded-2xl border border-white/[0.08] bg-[#0d0d14] p-10 flex flex-col items-center gap-3">
         <div className="w-8 h-8 border-2 border-white/[0.10] border-t-[#ff4444]/60 rounded-full animate-spin" />
-        <p className="text-sm text-zinc-600 font-mono">Reading PDF...</p>
+        <p className="text-sm text-zinc-500 font-mono">Reading PDF...</p>
       </div>
     );
   }
@@ -162,8 +165,8 @@ export function ResumeDropzone({ onExtracted, isDisabled }: ResumeDropzoneProps)
         focus-visible:ring-2 focus-visible:ring-[#ff4444]/50
         ${
           isDragging
-            ? "border-[#ff4444]/60 bg-[#ff4444]/[0.05] scale-[1.01]"
-            : "border-white/[0.10] bg-[#0e0e14] hover:border-white/[0.22] hover:bg-[#111118]"
+            ? "border-[#ff4444]/50 bg-[#ff4444]/[0.04] scale-[1.01]"
+            : "border-white/[0.09] bg-[#0d0d14] hover:border-white/[0.18] hover:bg-[#111118]"
         }
         p-8 sm:p-12 flex flex-col items-center gap-4
       `}
@@ -182,8 +185,8 @@ export function ResumeDropzone({ onExtracted, isDisabled }: ResumeDropzoneProps)
         className={`
           w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-200
           ${isDragging
-            ? "bg-[#ff4444]/20 border border-[#ff4444]/30"
-            : "bg-white/[0.04] border border-white/[0.08]"
+            ? "bg-[#ff4444]/15 border border-[#ff4444]/30"
+            : "bg-white/[0.04] border border-white/[0.07] group-hover:border-white/[0.14]"
           }
         `}
       >
@@ -192,7 +195,7 @@ export function ResumeDropzone({ onExtracted, isDisabled }: ResumeDropzoneProps)
           height="24"
           viewBox="0 0 24 24"
           fill="none"
-          stroke={isDragging ? "#ff4444" : "#71717a"}
+          stroke={isDragging ? "#ff4444" : "#52525b"}
           strokeWidth="1.8"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -206,15 +209,18 @@ export function ResumeDropzone({ onExtracted, isDisabled }: ResumeDropzoneProps)
 
       {/* Text */}
       <div className="text-center space-y-1.5">
-        <p className="font-semibold text-[#f8f8f8] text-sm sm:text-base">
+        <p className="font-semibold text-[#f0f0f4] text-sm sm:text-base">
           {isDragging ? "Drop it — let's see what we're working with" : "Drop your resume PDF here"}
         </p>
         <p className="text-zinc-600 text-xs sm:text-sm">
           <span className="hidden sm:inline">Drag & drop, or </span>
-          <span className="text-zinc-400 underline underline-offset-2 decoration-zinc-600">
+          <span className="text-zinc-400 underline underline-offset-2 decoration-zinc-700">
             tap to browse
           </span>
-          <span className="text-zinc-700"> · PDF · up to 15 MB</span>
+          <span className="text-zinc-700"> · PDF only · up to 15 MB</span>
+        </p>
+        <p className="text-zinc-700 text-[11px] font-mono hidden sm:block">
+          Works with all standard resume formats
         </p>
       </div>
 

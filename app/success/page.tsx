@@ -76,7 +76,7 @@ export default function SuccessPage() {
     setPaymentData(payment);
     setResumeText(storedResume);
     fetchRewrite(payment, storedResume);
-  }, []); // intentionally empty — runs once on mount
+  }, []);
 
   function handleRetry() {
     if (paymentData && resumeText) {
@@ -93,7 +93,6 @@ export default function SuccessPage() {
 
   async function handleDownloadPDF() {
     if (!structured) {
-      // Fallback: download plain text if structured data missing
       handleDownloadTxt();
       return;
     }
@@ -121,14 +120,27 @@ export default function SuccessPage() {
     <main className="min-h-[100dvh] bg-[#050508] text-white flex flex-col">
       {/* Ambient glow */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-10%] right-[-5%] w-[300px] sm:w-[400px] h-[300px] sm:h-[400px] bg-red-500/[0.03] rounded-full blur-[100px]" />
+        <div className="absolute top-[-10%] right-[-5%] w-[400px] h-[400px] bg-emerald-500/[0.025] rounded-full blur-[120px]" />
+        <div className="absolute bottom-[10%] left-[-5%] w-[300px] h-[300px] bg-indigo-500/[0.02] rounded-full blur-[100px]" />
       </div>
 
       {/* Header */}
-      <header className="relative z-10 border-b border-white/[0.06] px-4 sm:px-6 py-4">
-        <Link href="/" className="font-black text-base tracking-tight text-[#f8f8f8] hover:opacity-70 transition-opacity">
-          ResumeRoaster
-        </Link>
+      <header className="relative z-10 border-b border-white/[0.06] px-4 sm:px-8 py-4 bg-[#050508]/85 backdrop-blur-md">
+        <div className="max-w-2xl mx-auto flex items-center justify-between">
+          <Link
+            href="/"
+            className="flex items-center gap-2 font-black text-[15px] tracking-tight text-[#f0f0f4] hover:opacity-75 transition-opacity"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
+              <path d="M12 2C8 6 6 9 7 13c1 4 5 5 5 9 0-2 2-4 2-7s-3-4-2-13z" fill="#ff4444" opacity="0.9"/>
+              <path d="M9 14c0 3 2 5 3 8 0-2 1.5-3 1.5-5.5S11 13 9 14z" fill="#ff6b2b" opacity="0.7"/>
+            </svg>
+            Resume<span className="text-[#ff4444]">Roaster</span>
+          </Link>
+          <span className="text-[10px] text-zinc-600 font-mono tracking-widest uppercase hidden sm:inline">
+            Your result
+          </span>
+        </div>
       </header>
 
       <div className="relative z-10 max-w-2xl mx-auto px-4 sm:px-5 py-10 sm:py-14 w-full space-y-8">
@@ -175,18 +187,25 @@ function LoadingState() {
 
   return (
     <div className="text-center space-y-8 animate-fade-in">
-      <div className="space-y-3">
+      <div className="space-y-4">
         <div className="flex justify-center">
-          <div className="w-10 h-10 border-2 border-white/[0.10] border-t-[#ff4444]/80 rounded-full animate-spin" />
+          <div className="relative">
+            <div className="w-12 h-12 border-2 border-white/[0.08] border-t-[#ff4444]/80 rounded-full animate-spin" />
+            <div className="absolute inset-0 w-12 h-12 border-2 border-transparent border-b-[#6366f1]/30 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
+          </div>
         </div>
-        <h1 className="text-xl sm:text-2xl font-bold text-[#f8f8f8]">AI is rewriting your resume…</h1>
-        <p className="text-zinc-500 text-sm font-mono">{LOADING_STEPS[step]}</p>
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-[#f0f0f4] font-display">
+            AI is rewriting your resume…
+          </h1>
+          <p className="text-zinc-500 text-sm font-mono mt-1">{LOADING_STEPS[step]}</p>
+        </div>
       </div>
 
       {/* Progress bar */}
       <div className="w-full h-[2px] bg-white/[0.07] rounded-full overflow-hidden">
         <div
-          className="h-full bg-[#ff4444] rounded-full transition-all duration-[2800ms] ease-out"
+          className="h-full bg-gradient-to-r from-[#ff4444] to-orange-500 rounded-full transition-all duration-[2800ms] ease-out"
           style={{ width: `${((step + 1) / LOADING_STEPS.length) * 100}%` }}
         />
       </div>
@@ -196,7 +215,7 @@ function LoadingState() {
         {Array.from({ length: 10 }).map((_, i) => (
           <div
             key={i}
-            className={`h-3 rounded-full bg-white/[0.07] animate-pulse ${
+            className={`h-3 rounded-full bg-white/[0.06] animate-pulse ${
               i % 4 === 3 ? "w-1/2" : i % 4 === 2 ? "w-3/4" : "w-full"
             }`}
             style={{ animationDelay: `${i * 0.08}s` }}
@@ -213,18 +232,19 @@ function SessionExpiredState() {
   return (
     <div className="text-center space-y-5 animate-fade-in">
       <div className="text-5xl">🕐</div>
-      <h1 className="text-xl sm:text-2xl font-bold text-[#f8f8f8]">Session expired</h1>
-      <p className="text-zinc-500 text-sm max-w-sm mx-auto">
+      <h1 className="text-xl sm:text-2xl font-bold text-[#f0f0f4] font-display">Session expired</h1>
+      <p className="text-zinc-500 text-sm max-w-sm mx-auto leading-relaxed">
         Looks like you&apos;ve already received your rewrite, or this session has expired.
+        Sessions are cleared after use for your privacy.
       </p>
       <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
         <Link href="/" className="w-full sm:w-auto">
-          <Button className="w-full sm:w-auto bg-[#ff4444] text-white font-semibold hover:bg-[#ff2222]">
+          <Button className="w-full sm:w-auto bg-[#ff4444] text-white font-semibold hover:bg-[#ff2222] font-display">
             Roast another resume →
           </Button>
         </Link>
         <a href="mailto:support@resumeroaster.in">
-          <Button variant="outline" className="border-white/[0.10] text-zinc-400 hover:bg-white/[0.05] hover:text-[#f8f8f8]">
+          <Button variant="outline" className="border-white/[0.10] text-zinc-400 hover:bg-white/[0.05] hover:text-[#f0f0f4]">
             Contact support
           </Button>
         </a>
@@ -239,7 +259,7 @@ function ErrorState({ error, canRetry, onRetry }: { error: string; canRetry: boo
   return (
     <div className="text-center space-y-5 animate-fade-in">
       <div className="text-5xl">😕</div>
-      <h1 className="text-xl sm:text-2xl font-bold text-[#f8f8f8]">Something went wrong</h1>
+      <h1 className="text-xl sm:text-2xl font-bold text-[#f0f0f4] font-display">Something went wrong</h1>
       <p className="text-zinc-500 text-sm max-w-sm mx-auto">{error}</p>
       <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
         {canRetry && (
@@ -248,7 +268,7 @@ function ErrorState({ error, canRetry, onRetry }: { error: string; canRetry: boo
           </Button>
         )}
         <Link href="/">
-          <Button variant="outline" className="border-white/[0.10] text-zinc-400 hover:bg-white/[0.05] hover:text-[#f8f8f8]">
+          <Button variant="outline" className="border-white/[0.10] text-zinc-400 hover:bg-white/[0.05] hover:text-[#f0f0f4]">
             Back to home
           </Button>
         </Link>
@@ -276,33 +296,47 @@ function ReadyState({
 }) {
   return (
     <div className="space-y-7 animate-fade-in">
-      {/* Header */}
-      <div className="text-center space-y-2">
-        <div className="inline-flex items-center justify-center w-11 h-11 rounded-full border border-[#ff4444]/30 bg-[#ff4444]/10 mb-2">
-          <CheckIcon className="w-4 h-4 text-[#ff4444]" />
+      {/* Celebration header */}
+      <div className="text-center space-y-3">
+        <div className="relative inline-flex items-center justify-center mb-2">
+          <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center">
+            <CheckIcon className="w-7 h-7 text-emerald-400" />
+          </div>
+          <div
+            className="absolute inset-0 rounded-full bg-emerald-500/[0.07] animate-ping"
+            style={{ animationDuration: "2s" }}
+          />
         </div>
-        <h1 className="text-xl sm:text-2xl font-bold text-[#f8f8f8]">Your rewritten resume is ready</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-[#f0f0f4] font-display">
+          Your rewritten resume is ready
+        </h1>
         <p className="text-zinc-500 text-sm font-mono">
-          ATS-optimized · Achievement-focused · PDF ready to send
+          ATS-optimized · Achievement-focused · Recruiter-ready
         </p>
+        {/* Achievement strip */}
+        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 pt-1">
+          {["✓ ATS keywords injected", "✓ Bullets strengthened", "✓ Summary rewritten"].map((item) => (
+            <span key={item} className="text-[11px] text-emerald-400/60 font-mono">
+              {item}
+            </span>
+          ))}
+        </div>
       </div>
 
       {/* Action buttons */}
       <div className="flex flex-col sm:flex-row gap-3">
-        {/* Primary: Download PDF */}
         <Button
           onClick={onDownloadPDF}
-          className="flex-1 bg-[#ff4444] text-white font-bold h-12 hover:bg-[#ff2222] gap-2"
+          className="flex-1 bg-[#ff4444] text-white font-bold h-12 hover:bg-[#ff2222] gap-2 rounded-xl font-display"
         >
           <DownloadIcon className="w-4 h-4" />
           {structured ? "Download PDF" : "Download .txt"}
         </Button>
 
-        {/* Secondary: Copy text */}
         <Button
           onClick={onCopy}
           variant="outline"
-          className="flex-1 border-white/[0.10] text-zinc-400 hover:bg-white/[0.05] hover:text-[#f8f8f8] h-12 gap-2"
+          className="flex-1 border-white/[0.10] text-zinc-400 hover:bg-white/[0.05] hover:text-[#f0f0f4] h-12 gap-2 rounded-xl"
         >
           {copied ? (
             <>
@@ -318,7 +352,7 @@ function ReadyState({
         </Button>
       </div>
 
-      {/* If we have structured data, show a section preview */}
+      {/* Resume preview */}
       {structured ? (
         <StructuredPreview data={structured} />
       ) : (
@@ -327,8 +361,13 @@ function ReadyState({
 
       {/* Upsell add-ons */}
       {resumeText && (
-        <div className="space-y-3 pt-1">
-          <p className="text-[11px] text-zinc-600 font-mono tracking-widest uppercase text-center">Enhance your application</p>
+        <div className="space-y-4 pt-1">
+          <div className="flex items-center gap-3">
+            <span className="font-display font-bold text-xs tracking-[0.15em] uppercase text-zinc-400">
+              Level up your full application
+            </span>
+            <div className="flex-1 border-t border-white/[0.05]" />
+          </div>
           <CoverLetterBanner resumeText={resumeText} />
           <LinkedInBanner resumeText={resumeText} />
         </div>
@@ -338,19 +377,19 @@ function ReadyState({
       <div className="text-center pt-2 border-t border-white/[0.05] space-y-3">
         <p className="text-zinc-700 text-xs">Want to improve a different resume?</p>
         <Link href="/">
-          <Button variant="ghost" className="text-zinc-400 hover:text-[#f8f8f8] text-sm">
+          <Button variant="ghost" className="text-zinc-400 hover:text-[#f0f0f4] text-sm font-display">
             Roast Another Resume →
           </Button>
         </Link>
         <div className="pt-1">
           <a
-            href={`https://twitter.com/intent/tweet?text=${encodeURIComponent("I just got my resume rewritten by AI for ₹99. It's actually good. Try it free → https://resumeroaster.in")}`}
+            href={`https://twitter.com/intent/tweet?text=${encodeURIComponent("I just got my resume rewritten by AI for ₹499. It's actually good. Try it free → https://resumeroaster.in")}`}
             target="_blank"
             rel="noopener noreferrer"
           >
             <Button
               variant="outline"
-              className="border-white/[0.10] text-zinc-500 hover:bg-white/[0.05] hover:text-[#f8f8f8] text-sm"
+              className="border-white/[0.10] text-zinc-500 hover:bg-white/[0.05] hover:text-[#f0f0f4] text-sm"
             >
               Share on X →
             </Button>
@@ -365,8 +404,7 @@ function ReadyState({
 
 function StructuredPreview({ data }: { data: StructuredResume }) {
   return (
-    <div className="rounded-xl border border-white/[0.07] bg-[#0e0e14] overflow-hidden">
-      {/* Title bar */}
+    <div className="rounded-xl border border-white/[0.07] bg-[#0d0d14] overflow-hidden">
       <div className="px-4 py-3 border-b border-white/[0.06] flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <div className="w-1.5 h-1.5 rounded-full bg-[#ff4444]/60" />
@@ -378,16 +416,13 @@ function StructuredPreview({ data }: { data: StructuredResume }) {
       </div>
 
       <div className="p-5 space-y-5 max-h-[500px] overflow-y-auto">
-        {/* Header */}
         <div className="text-center space-y-0.5">
-          <p className="font-bold text-[#f8f8f8] text-base">{data.name}</p>
+          <p className="font-bold text-[#f0f0f4] text-base font-display">{data.name}</p>
           <p className="text-zinc-500 text-xs">{data.contact}</p>
         </div>
 
-        {/* Sections */}
         {data.sections.map((section, i) => (
           <div key={i} className="space-y-2">
-            {/* Section heading with divider */}
             <div className="flex items-center gap-2">
               <span className="font-mono text-[9px] tracking-[0.18em] text-zinc-500 uppercase font-semibold">
                 {section.heading}
@@ -395,16 +430,14 @@ function StructuredPreview({ data }: { data: StructuredResume }) {
               <div className="flex-1 border-t border-white/[0.07]" />
             </div>
 
-            {/* Free text */}
             {section.text && (
               <p className="text-zinc-400 text-xs leading-relaxed">{section.text}</p>
             )}
 
-            {/* Items */}
             {section.items?.map((item, j) => (
               <div key={j} className="space-y-1">
                 <div className="flex items-start justify-between gap-2">
-                  <span className="text-[#f8f8f8] text-xs font-semibold leading-snug">{item.title}</span>
+                  <span className="text-[#f0f0f4] text-xs font-semibold leading-snug">{item.title}</span>
                   {item.period && (
                     <span className="text-zinc-600 text-[10px] font-mono whitespace-nowrap flex-shrink-0">{item.period}</span>
                   )}
@@ -435,7 +468,7 @@ function StructuredPreview({ data }: { data: StructuredResume }) {
 
 function PlainTextPreview({ resume }: { resume: string }) {
   return (
-    <div className="rounded-xl border border-white/[0.07] bg-[#0e0e14] overflow-hidden">
+    <div className="rounded-xl border border-white/[0.07] bg-[#0d0d14] overflow-hidden">
       <div className="px-4 py-3 border-b border-white/[0.06] flex items-center gap-2">
         <div className="w-1.5 h-1.5 rounded-full bg-white/30" />
         <span className="text-[11px] text-zinc-600 font-mono tracking-widest uppercase">

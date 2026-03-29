@@ -10,7 +10,7 @@ const FREE_FEATURES = [
   { text: "Overall score out of 10", included: true },
   { text: "Section-level issue detection", included: true },
   { text: "Fix suggestions per critique", included: true },
-  { text: "AI rewrite of your full resume", included: false },
+  { text: "Full AI resume rewrite", included: false },
   { text: "ATS keyword optimization", included: false },
   { text: "Strong action verbs & metrics", included: false },
   { text: "Downloadable PDF", included: false },
@@ -21,7 +21,7 @@ const PRO_FEATURES = [
   { text: "Full AI resume rewrite", included: true },
   { text: "ATS keyword optimization", included: true },
   { text: "Strong action verbs & metrics", included: true },
-  { text: "Professional summary rewrite", included: true },
+  { text: "Professional summary rewritten", included: true },
   { text: "Instant PDF download", included: true },
   { text: "One-time payment, no subscription", included: true, note: true },
 ];
@@ -44,7 +44,6 @@ export function PricingModal({ score, isOpen, isLoading, appliedCoupon, onClose,
   const priceLabel = effectivePaise === 0 ? "FREE" : `₹${effectivePaise / 100}`;
   const isFree = effectivePaise === 0;
 
-  // Lock body scroll while modal is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -54,7 +53,6 @@ export function PricingModal({ score, isOpen, isLoading, appliedCoupon, onClose,
     return () => { document.body.style.overflow = ""; };
   }, [isOpen]);
 
-  // Close on Escape
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", handler);
@@ -66,24 +64,24 @@ export function PricingModal({ score, isOpen, isLoading, appliedCoupon, onClose,
   const scoreColor =
     score <= 3 ? "#ff4444" :
     score <= 5 ? "#f97316" :
-    score <= 7 ? "#fbbf24" : "#34d399";
+    score <= 7 ? "#fbbf24" : "#10b981";
 
   const urgencyLine =
     score <= 3 ? "Most recruiters reject resumes at this score without reading." :
-    score <= 5 ? "You're landing in the 'maybe' pile. Let's move you to 'yes'." :
+    score <= 5 ? "You're in the 'maybe' pile. Let's move you firmly to 'yes'." :
     score <= 7 ? "You're close — small fixes could mean 2× more callbacks." :
-                 "Already decent — now let's make it undeniable.";
+                 "Already decent — let's make it undeniable.";
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-backdrop-in"
+        className="absolute inset-0 bg-black/75 backdrop-blur-sm animate-backdrop-in"
         onClick={onClose}
       />
 
       {/* Modal card */}
-      <div className="relative w-full sm:max-w-2xl max-h-[92dvh] sm:max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-2xl border border-white/[0.10] bg-[#0b0b0f] animate-pop-in shadow-2xl shadow-black/60">
+      <div className="relative w-full sm:max-w-2xl max-h-[92dvh] sm:max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-2xl border border-white/[0.10] bg-[#0b0b0f] animate-pop-in shadow-2xl shadow-black/70">
 
         {/* Top drag handle (mobile) */}
         <div className="sm:hidden flex justify-center pt-3 pb-1">
@@ -98,21 +96,29 @@ export function PricingModal({ score, isOpen, isLoading, appliedCoupon, onClose,
           <XIcon className="w-3.5 h-3.5" />
         </button>
 
-        <div className="px-5 sm:px-8 pt-5 sm:pt-7 pb-7 sm:pb-8 space-y-7">
+        <div className="px-5 sm:px-8 pt-5 sm:pt-7 pb-7 sm:pb-8 space-y-6">
 
           {/* Score hook */}
-          <div className="space-y-2 pr-8">
+          <div className="space-y-2.5 pr-8">
             <div className="flex items-baseline gap-3">
-              <span className="text-5xl sm:text-6xl font-black tracking-tighter leading-none" style={{ color: scoreColor }}>
+              <span className="text-5xl sm:text-6xl font-black tracking-tighter leading-none font-display" style={{ color: scoreColor }}>
                 {score}
                 <span className="text-xl text-zinc-700 font-bold ml-1">/10</span>
               </span>
               <div className="space-y-0.5">
                 <p className="text-xs text-zinc-600 font-mono tracking-widest uppercase">Your score</p>
-                <p className="text-sm font-semibold text-[#f8f8f8]">The AI has already rewritten it.</p>
+                <p className="text-sm font-semibold text-[#f0f0f4]">The AI has already rewritten it.</p>
               </div>
             </div>
             <p className="text-zinc-500 text-sm leading-relaxed">{urgencyLine}</p>
+
+            {/* Social proof line */}
+            <div className="flex items-center gap-1.5 pt-0.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse-dot flex-shrink-0" />
+              <span className="text-[11px] text-zinc-600 font-mono">
+                1,247 job seekers improved their resume this month
+              </span>
+            </div>
           </div>
 
           {/* Comparison table */}
@@ -121,7 +127,7 @@ export function PricingModal({ score, isOpen, isLoading, appliedCoupon, onClose,
             <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-4 sm:p-5 space-y-3">
               <div className="space-y-0.5">
                 <div className="text-[10px] font-mono tracking-widest uppercase text-zinc-600">Free</div>
-                <div className="text-lg font-black text-[#f8f8f8]">₹0</div>
+                <div className="text-lg font-black text-[#f0f0f4] font-display">₹0</div>
                 <div className="text-[11px] text-zinc-600">What you already got</div>
               </div>
               <ul className="space-y-2">
@@ -145,8 +151,8 @@ export function PricingModal({ score, isOpen, isLoading, appliedCoupon, onClose,
             </div>
 
             {/* Pro col */}
-            <div className="rounded-xl border border-[#ff4444]/30 bg-[#ff4444]/[0.04] p-4 sm:p-5 space-y-3 relative overflow-hidden animate-border-glow">
-              {/* Recommended badge */}
+            <div className="rounded-xl border border-[#ff4444]/30 bg-gradient-to-b from-[#ff4444]/[0.10] to-[#ff4444]/[0.02] p-4 sm:p-5 space-y-3 relative overflow-hidden animate-border-glow">
+              {/* Unlock badge */}
               <div className="absolute top-3 right-3">
                 <span className="text-[9px] font-bold bg-[#ff4444] text-white px-2 py-0.5 rounded-full uppercase tracking-wide">
                   Unlock
@@ -156,16 +162,16 @@ export function PricingModal({ score, isOpen, isLoading, appliedCoupon, onClose,
               <div className="space-y-0.5">
                 <div className="text-[10px] font-mono tracking-widest uppercase text-[#ff4444]/70">Pro</div>
                 <div className="flex items-baseline gap-1.5">
-                  <div className="text-lg font-black text-[#f8f8f8]">{priceLabel}</div>
+                  <div className="text-lg font-black text-[#f0f0f4] font-display">{priceLabel}</div>
                   {appliedCoupon && effectivePaise > 0 && (
                     <span className="text-xs text-zinc-600 line-through">{service.priceLabel}</span>
                   )}
-                  {isFree && <span className="text-[10px] text-green-400 font-mono">coupon applied</span>}
+                  {isFree && <span className="text-[10px] text-emerald-400 font-mono">coupon applied</span>}
                 </div>
                 <div className="text-[11px] text-zinc-500">One-time · instant delivery</div>
               </div>
 
-              <ul className="space-y-2">
+              <ul className="space-y-2.5">
                 {PRO_FEATURES.map((f, i) => (
                   <li
                     key={i}
@@ -173,7 +179,7 @@ export function PricingModal({ score, isOpen, isLoading, appliedCoupon, onClose,
                     style={{ animationDelay: `${0.15 + i * 0.04}s` }}
                   >
                     <CheckIcon className="w-3.5 h-3.5 text-[#ff4444] flex-shrink-0 mt-0.5" />
-                    <span className={`text-xs leading-snug ${f.bold ? "text-[#f8f8f8] font-semibold" : f.note ? "text-zinc-500" : "text-zinc-300"}`}>
+                    <span className={`text-xs leading-snug ${f.bold ? "text-[#f0f0f4] font-semibold" : f.note ? "text-zinc-500" : "text-zinc-300"}`}>
                       {f.text}
                     </span>
                   </li>
@@ -187,7 +193,7 @@ export function PricingModal({ score, isOpen, isLoading, appliedCoupon, onClose,
             <Button
               onClick={onPay}
               disabled={isLoading}
-              className="btn-shimmer w-full h-13 bg-[#ff4444] text-white font-black text-base tracking-wide rounded-xl hover:bg-[#ff2222] active:scale-[0.99] transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-red-900/20 gap-2"
+              className="btn-shimmer w-full h-14 bg-[#ff4444] text-white font-black text-base tracking-wide rounded-xl hover:bg-[#ff2222] active:scale-[0.99] transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-red-900/20 gap-2 font-display"
             >
               {isLoading ? (
                 <span className="flex items-center gap-2">
@@ -207,7 +213,7 @@ export function PricingModal({ score, isOpen, isLoading, appliedCoupon, onClose,
               {[
                 { icon: "⚡", text: "Instant delivery" },
                 { icon: "🔒", text: "Razorpay secured" },
-                { icon: "🗑️", text: "Text never stored" },
+                { icon: "🚫", text: "No login required" },
               ].map(({ icon, text }) => (
                 <span key={text} className="flex items-center gap-1.5 text-zinc-600 text-[11px] font-mono">
                   <span className="text-[11px]">{icon}</span> {text}
@@ -215,11 +221,12 @@ export function PricingModal({ score, isOpen, isLoading, appliedCoupon, onClose,
               ))}
             </div>
 
-            {/* Guarantee line */}
-            <div className="flex items-start gap-2 bg-white/[0.02] border border-white/[0.05] rounded-xl px-4 py-3">
+            {/* Guarantee */}
+            <div className="flex items-start gap-2.5 bg-white/[0.02] border border-white/[0.06] rounded-xl px-4 py-3">
               <SparklesIcon className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
               <p className="text-zinc-500 text-xs leading-relaxed">
-                <span className="text-[#f8f8f8] font-medium">Not happy?</span> Email us within 24 hours and we&apos;ll refund you — no questions asked.
+                <span className="text-[#f0f0f4] font-medium">Not happy?</span>{" "}
+                Email us within 24 hours and we&apos;ll refund you — no questions asked.
               </p>
             </div>
           </div>
